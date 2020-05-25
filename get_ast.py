@@ -72,10 +72,11 @@ def get_key(dict, val):
             if val in value:
                 return key, value
 
-file = open("get_ast.py", "r")
-f = file.read()
-file.close()
-jso = make_ast(f)
-flat = flatten_json(jso)
-print(json.dumps(flat, indent=True))
-print(get_key(flat, "get_ast"))
+def test():
+    file = open("get_ast.py", "r")
+    f = file.read()
+    file.close()
+    jso = make_ast(f)
+    flat = flatten_json(jso)
+    print(json.dumps(flat, indent=True))
+    print(get_key(flat, "get_ast"))
