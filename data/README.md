@@ -6,6 +6,6 @@ c) Removed duplicates. Duplicates are projects that have the same github link. T
 
 d) Get the number of commit of each project.
 
-e) Remove the lower quartile to keep only projects with the sufficient amount of commits.
-For confidenttiality, researchers somethimes develop thir code out of Github or in a private Repository, then once the paper is published, they then pull all the code into one or few commits to Github.
+e) Remove projects with less than 30 commits oto keep only projects with the sufficient amount of commits.
+For confidenttiality, researchers somethimes develop their code out of Github or in a private Repository, then once the paper is published, they then pull all the code into one or few commits to Github.
 This removes all the medatadata associated to the project evolution and makes the project impossible to mine.

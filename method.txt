@@ -1,0 +1,6 @@
+the third rq is to assess how the datafiles and the code evolve together.
+For that, for each identified datafile (a file from the repo is identified as datafile according to the heuristics of the rq2), we checked all the commits modifying that file (C). We then looked at how many time a file appears in the commits. Let's say the file "data.csv" has been modified n=10 times (there are ten commits where that file appears). for each commit C[i] in C, we checked all the files modified by that commit. Let's call C[n][j] the jth file of the commit commit C[i]. then we check the presence of C[i][j] in all the commits (from o to 10) and count how many times we found that file.
+
+(Not yet done) Need to use a mathematical method combining the number of commits and the occurence of the file in the commits to asses what is the treshold from wich a file is correlated to another file in its evolution. Also may be interesting to check if  the reverse is true (if a correlated to b implies b is correlated to a)
+
+
