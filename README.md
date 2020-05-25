@@ -27,7 +27,7 @@ This removes all the medatadata associated to the project evolution and makes th
 # Method
 Given the fact that there are several ways to store data and that GitHub keeps tracks of changes in the project through files, we study how datafiles  are stored as and how they can impact the evolution of the repository.
 
-##RQ1
+## RQ2
 We developed some heuristics to identify dataset:
   1) directory name: Any directory name matching the String ``` data*``` and whose name is mentioned in the code is considered as storing data files.
   2) Non code file name is loaded in the code: Using python ast, we checked for any mention of a project's non-code filename in the code of the repo. To do this, we had to split repo files into code and non-code files using their extensions and ignoring standard files like README.md, setyp.py, requirements.txt.
