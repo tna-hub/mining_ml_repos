@@ -11,6 +11,7 @@ For now, we focus only on the second and third research question, as the first o
 
 # Dataset
 We analysed repositories from the Paper Of Code project which put together machine learning research papers with their corresponding github repository. We then filtered it to get only repos writen in python language.
+
 a) Downloaded the paper of code files (json)
 
 b) Extracted, through github API, the repositories with python as main language
@@ -29,8 +30,9 @@ Given the fact that there are several ways to store data and that GitHub keeps t
 
 ## RQ2
 We developed some heuristics to identify dataset:
-  1) directory name: Any directory name matching the String ``` data*``` and whose name is mentioned in the code is considered as storing data files.
-  2) Non code file name is loaded in the code: Using python ast, we checked for any mention of a project's non-code filename in the code of the repo. To do this, we had to split repo files into code and non-code files using their extensions and ignoring standard files like README.md, setyp.py, requirements.txt.
+  1) directory name: Any directory name containing the String ``` *data*``` and whose name is mentioned in the code is considered as storing data files.
+  2) Using a simple text find tool, like ``` grep ``` find all mentions of data or non-code files in code files. Ignore starndard files like README.md, setyp.py, requirements.txt.
+  3) Non code file name is loaded in the code: Using python ast, we checked how non-code files are used in the identified code files from the previous step. 
   
   It may be interesting to find out if the data is mentioned as input or output dataset by using the function calling it. But due to the disparity and the huge number of possibilities to use data (custom function, function open(), library function), this is a hard task that will need time to identify at an interesting number of possibilities that won't bias the results.
   
