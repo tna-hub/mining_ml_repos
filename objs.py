@@ -117,5 +117,5 @@ def getext(filename):
     ext = os.path.splitext(filename)[-1]
     return ext if ext is not None or ext != "" else "no"
 
-def h1(folder, code):
-    return
+def h1(foldername, code):
+    ret

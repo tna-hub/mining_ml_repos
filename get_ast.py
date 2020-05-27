@@ -67,13 +67,18 @@ def flatten_json(nested_json):
     return out
 
 def get_key(dict, val):
+    keyval = {}
     for key, value in dict.items():
         if isinstance(value, str):
             if val in value:
-                return key, value
+                keyval[key] = value
+    return keyval
+
+#def get_data()
 
 def test():
     file = open("get_ast.py", "r")
+    filey = "get_ast_filey.csv"
     f = file.read()
     file.close()
     jso = make_ast(f)
