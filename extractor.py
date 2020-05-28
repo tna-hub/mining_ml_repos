@@ -1,14 +1,22 @@
 from objects import *
 import shutil
 
+import logging
+
+logging.basicConfig(filename='app.log',
+                    filemode='w',
+                    format='%(message)s',
+                    level=logging.DEBUG)
+
 Base.prepare(engine, reflect=True)
 
 for repo in session.query(Repo).all():
-    print("Downloading repository ", repo.name)
+    logging.info("{}. Downloading repository {}".format(repo.id,  repo.name))
     repo.download()
-    print("+++++Extracting folders and files")
+    logging.info("-----Extracting folders and files")
     repo.extract_elements()
-    print("+++++Extracting commits")
+    logging.info("-----Extracting commits")
     repo.set_commits()
-    print("+++++All done! Deleting local repository", repo.name)
+    logging.info("-----All done! Deleting local repository ".format(repo.name))
     shutil.rmtree(repo.folder_name)
+
