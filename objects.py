@@ -10,9 +10,19 @@ from git import Repo as rp
 
 import get_ast
 from pydriller import RepositoryMining as rpm
+import configparser
+config = configparser.ConfigParser()
+config.read('data/db.ini')
 
+host = config['postgresql']['host']
+user = config['postgresql']['user']
+passwd = config['postgresql']['passwd']
+db = config['postgresql']['db']
 
-engine = create_engine('postgresql+psycopg2://postgres:postgres@localhost/ml_repos')
+engine = create_engine('postgresql+psycopg2://{}:{}@{}/{}'.format(user,
+                                                                  passwd,
+                                                                  host,
+                                                                  db))
 Base = automap_base()
 Base.prepare(engine, reflect=True)
 session = scoped_session(sessionmaker(bind=engine))

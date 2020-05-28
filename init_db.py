@@ -11,6 +11,7 @@ user = config['postgresql']['user']
 passwd = config['postgresql']['passwd']
 db = config['postgresql']['db']
 
+print("Starting the initialisation, please wait...")
 # declare a new PostgreSQL connection object
 conn = connect(
     dbname='postgres',
@@ -53,7 +54,7 @@ try:
     # close the connection to avoid memory leaks
     conn.close()
 except Exception as e:
-    print(e)
+    print("Error creating the database", e)
     exit()
 
 # declare a new PostgreSQL connection object
@@ -89,4 +90,5 @@ conn.commit()
 cursor.close()
 conn.close()
 
+print("+++++Done.")
 
