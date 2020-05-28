@@ -9,8 +9,8 @@ from sqlalchemy.ext.automap import automap_base
 from git import Repo as rp
 
 import get_ast
+from pydriller import RepositoryMining as rpm
 
-from utils import File
 
 engine = create_engine('postgresql+psycopg2://postgres:postgres@localhost/ml_repos')
 Base = automap_base()
@@ -20,6 +20,10 @@ session = scoped_session(sessionmaker(bind=engine))
 
 class Repo(Base):
     __table__ = Base.metadata.tables['repos']
+
+    @classmethod
+    def save(cls):
+        return session.add(Repo)
 
     @classmethod
     def by_id(cls, repo_id):
@@ -51,7 +55,6 @@ class Repo(Base):
                 el.is_code_file = el.set_is_code_file()
                 if el.is_code_file:
                     el.ast = el.set_ast()
-                    print("thi is ast", el.ast)
                 if not el.ignore():
                     # print(el.name, el.is_code_file)
                     session.add(el)
@@ -72,6 +75,55 @@ class Repo(Base):
                     session.add(el)
                     session.commit()
                     session.flush()
+
+    def set_commits(self):
+        for commit in rpm(self.folder_name).traverse_commits():
+            com = Commit()
+            data = {
+                'repo_id': self.id,
+                'sha': commit.hash,
+                'commit_date': commit.committer_date,
+                'author_name': commit.author.name,
+                'author_email': commit.author.email,
+            }
+            com.set_data(data)
+            session.add(com)
+            session.commit()
+            session.flush()
+
+            for mod in commit.modifications:
+                old_path = mod.old_path
+                new_path = mod.new_path
+                if old_path is None:
+                    path = new_path
+                elif new_path is None:
+                    path = old_path
+                elif old_path == new_path:
+                    path = old_path
+                else:
+                    path = None
+                if path is not None:
+                    path = "{}/{}".format(self.folder_name, path)
+                    file = Element.by_name_and_repo_id(path, self.id)
+                    if file is not None:
+                        data = {
+                            'file_id': file.id,
+                            'change_type': mod.change_type.name,
+                            'additions': mod.added,
+                            'deletions': mod.removed,
+                            'old_path': old_path,
+                            'new_path': new_path,
+                            'commit_id': com.id
+                        }
+                        com_mod = Commit_mod()
+                        com_mod.set_data(data)
+                        session.add(com_mod)
+                        session.commit()
+                        session.flush()
+
+    @classmethod
+    def get_commits(cls):
+        return session.query(Commit).filter(Commit.repo_id == Repo.id).all()
 
 
 class Element(Base):
@@ -105,6 +157,10 @@ class Element(Base):
         f.close()
         return ast
 
+    @classmethod
+    def by_name_and_repo_id(cls, name, repo_id):
+        return session.query(Element).filter(Element.name == name).filter(Element.repo_id == repo_id).first()
+
 
 class Datasets(Base):
     __table__ = Base.metadata.tables['datasets']
@@ -113,10 +169,34 @@ class Datasets(Base):
     def by_repo_name(cls, repo_name):
         return Datasets.query.join(Repo).filter(Repo.name == repo_name).all()
 
-class Commits(Base):
+
+class Commit(Base):
     __table__ = Base.metadata.tables['commits']
 
+    def set_data(self, data):
+        self.repo_id = data['repo_id']
+        self.sha = data['sha']
+        self.commit_date = data['commit_date']
+        self.author_name = data['author_name']
+        self.author_email = data['author_email']
 
+
+    @classmethod
+    def by_sha(cls, sha):
+        return session.query(Commit).filter(Commit.sha == sha)
+
+
+class Commit_mod(Base):
+    __table__ = Base.metadata.tables['commit_modifications']
+
+    def set_data(self, data):
+        self.file_id = data['file_id']
+        self.change_type = data['change_type']
+        self.additions = data['additions']
+        self.deletions = data['deletions']
+        self.old_path = data['old_path']
+        self.new_path = data['new_path']
+        self.commit_id = data['commit_id']
 
 # Printing table names
 # print(Base.classes.keys())
