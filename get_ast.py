@@ -19,7 +19,6 @@ def jsonify_ast(node, level=0):
             elif isinstance(v, list):
                 fields[k] = []
                 for e in v:
-                    print(e)
                     fields[k].append(jsonify_ast(e))
 
             elif isinstance(v, str):

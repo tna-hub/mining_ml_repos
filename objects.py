@@ -162,9 +162,12 @@ class Element(Base):
         return self.extension == '.py'
 
     def set_ast(self):
-        f = open(self.name, 'r')
-        ast = get_ast.make_ast(f.read())
-        f.close()
+        try:
+            f = open(self.name, 'r')
+            ast = get_ast.make_ast(f.read())
+            f.close()
+        except Exception as e:
+            ast = {'error': "{}".format(e)}
         return ast
 
     @classmethod
