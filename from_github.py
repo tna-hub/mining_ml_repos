@@ -26,7 +26,6 @@ def download(g, repo, sha):
 
 
 def get_commit(rep_name, sha) -> Commit:
-    print('start get commit', rep_name)
     g = Github(token)
     rate_limit = g.get_rate_limit()
     try:
