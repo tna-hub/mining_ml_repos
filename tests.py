@@ -2,11 +2,11 @@ from objects import *
 import unittest
 
 Base.prepare(engine, reflect=True)
-repository = Repo.by_id(69)
+repository = Repo.by_id(16)
 
 class TestRepository(unittest.TestCase):
     def test_repo(self):
-        print('download')
+        print("{}. Downloading repository {}".format(repository.id, repository.name))
         repository.download()
         print('extract')
         repository.extract_elements()

@@ -3,8 +3,8 @@ import csv
 
 from psycopg2 import connect, extensions, sql
 
-config = configparser.ConfigParser()
-config.read('data/db.ini')
+config = configparser.ConfigParser(inline_comment_prefixes="#")
+config.read('data/config.ini')
 
 host = config['postgresql']['host']
 user = config['postgresql']['user']

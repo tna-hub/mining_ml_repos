@@ -13,10 +13,8 @@ import get_ast
 from pydriller import RepositoryMining as rpm
 import configparser
 
-from from_github import get_commit
-
 config = configparser.ConfigParser()
-config.read('data/db.ini')
+config.read('data/config.ini')
 
 host = config['postgresql']['host']
 user = config['postgresql']['user']
@@ -60,6 +58,7 @@ class Repo(Base):
         for r, d, f in os.walk(self.folder_name):
             for file in f:
                 path = os.path.join(r, file)
+                print('        +Found file:', path)
                 el = Element(
                     is_folder=False,
                     name=path,
@@ -76,6 +75,7 @@ class Repo(Base):
 
             for folder in d:
                 path = os.path.join(r, folder)
+                print('        +Found folder:', path)
                 el = Element(
                     is_folder=True,
                     name=path,
@@ -91,6 +91,7 @@ class Repo(Base):
 
     def set_commits(self):
         for commit in rpm(self.folder_name).traverse_commits():
+            print('        +Getting commit:', commit.hash)
             com = Commit()
             com2 = from_github.get_commit(self.name, commit.hash)
             stats = com2.stats if com2 is not None else None

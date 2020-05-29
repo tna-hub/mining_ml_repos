@@ -1,9 +1,12 @@
 import time
 from github import GithubException
 from github import Github, Commit
-import csv
+import configparser
 
-token = 'd7b31a613397dc6ce1eb3cd12eec34553f52509f'
+config = configparser.ConfigParser(inline_comment_prefixes="#")
+config.read('data/config.ini')
+
+token = config['github']['token']
 
 
 def download(g, repo, sha):
@@ -25,6 +28,9 @@ def download(g, repo, sha):
         return None
 
 
+import traceback
+
+
 def get_commit(rep_name, sha) -> Commit:
     g = Github(token)
     rate_limit = g.get_rate_limit()
@@ -43,5 +49,5 @@ def get_commit(rep_name, sha) -> Commit:
                 print('Exception not know from github', error)
                 return None
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         return None
