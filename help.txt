@@ -1,0 +1,9 @@
+Till now, the app takes as input the 'data/datasetv1.csv' file, extract the relevant elements (files an commits), then save it to the database.
+
+To execute:
+1. Open 'config.ini' in the data folder and edit your postgresql database connection details and your github token
+2. Run the file init_db.py (python3 db_ini.py).
+3. Start the extraction by running extractor.py.
+4. Now wait. It takes a while. We should consider splitting the work. Each one choosing a range of rows in the dataset (delete all the lines not needed) before running init_db.py
+
+After this, all the necessary data will be in the database. Only the analysis is left.

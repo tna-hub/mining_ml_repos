@@ -1,5 +1,5 @@
 # Mining machine learning repositories
-
+``` For instructions to execute, please read help.txt file ```
 
 This project aims to mining github machine learning repositories in order to understand how they deal with datasets. It is part of of a bigger project having three reseach questions:
 
@@ -26,6 +26,7 @@ This removes all the medatadata associated to the project evolution and makes th
 
 
 # Method
+
 Given the fact that there are several ways to store data and that GitHub keeps tracks of changes in the project through files, we study how datafiles  are stored as and how they can impact the evolution of the repository.
 
 ## RQ2
