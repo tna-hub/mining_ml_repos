@@ -11,6 +11,7 @@ user = config['postgresql']['user']
 passwd = config['postgresql']['passwd']
 db = config['postgresql']['db']
 
+datafile = config['datafile']['filename']
 print("Starting the initialisation, please wait...")
 # declare a new PostgreSQL connection object
 conn = connect(
@@ -72,7 +73,7 @@ except Exception as e:
     print(e)
 
 # Inserting data in the database
-data_path = 'data/datasetv1.csv'
+data_path = 'data/{}'.format(datafile)
 with open(data_path, 'r') as f:
     reader = csv.reader(f)
     next(reader)  # Skip the header row.
