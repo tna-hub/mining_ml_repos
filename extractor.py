@@ -11,5 +11,5 @@ for repo in session.query(Repo).all():
     print("     -Extracting commits..., may take a while")
     repo.set_commits()
     print("     -All done! Deleting local repository ".format(repo.name))
-    shutil.rmtree(repo.folder_name)
+    shutil.rmtree(repo.folder_name, ignore_errors=False, onerror=None)
 
