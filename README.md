@@ -251,13 +251,16 @@ This removes all the medatadata associated to the project evolution and makes th
 
 Given the fact that there are several ways to store data and that GitHub keeps tracks of changes in the project through files, we study how datafiles  are stored as and how they can impact the evolution of the repository.
 
+## RQ1
+
+Using python ast, we extracted the imported libraries from each repository, then analysed how these libraries are used in all the repositories using association mining
+
 ## RQ2
 We developed some heuristics to identify dataset:
-  1) directory name: Any directory name containing the String ``` *data*``` and whose name is mentioned in the code is considered as storing data files.
-  2) Using a simple text find tool, like ``` grep ``` find all mentions of data or non-code files in code files. Ignore starndard files like README.md, setyp.py, requirements.txt.
-  3) Non code file name is loaded in the code: Using python ast, we checked how non-code files are used in the identified code files from the previous step. 
+  1) h1: file and folder name: Any non code file or folder name containing the String ``` *data*``` is considered as storing data files.
+  ) h2: Non code file  or folder name is loaded in the code: Using python ast, we find all mentions of non-code files and folder names in code files. Ignoring standard files like README.md, setyp.py, requirements.txt and files ending with extensions "", ".md", ".yml", ".sh", ".h"
   
-  It may be interesting to find out if the data is mentioned as input or output dataset by using the function calling it. But due to the disparity and the huge number of possibilities to use data (custom function, function open(), library function), this is a hard task that will need time to identify at an interesting number of possibilities that won't bias the results.
+  It may be interesting to find out if the data is mentioned as input or output dataset by using the function calling it. But due to the disparity and the huge number of possibilities to use data (custom function, function open(), library function), this may a hard task that will need time to identify at an interesting number of possibilities that won't bias the results. We can use the libraries from rq1 and checck the functions each library implemented to load datasets, along with built in funtion open('filename', 'mode') to determine is the dataset is loaded as input of output.
   
   ## RQ3
   the third rq is to assess how the datafiles and the code evolve together.
