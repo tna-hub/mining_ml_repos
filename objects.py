@@ -66,7 +66,7 @@ class Repo(Base):
                 el.extension = el.get_extension()
                 el.is_code_file = el.set_is_code_file()
                 if el.is_code_file:
-                    el.ast = el.set_ast()
+                    el.ast, el.imports = el.set_ast_and_modules()
                 if not el.ignore():
                     session.add(el)
                     session.commit()
@@ -165,14 +165,18 @@ class Element(Base):
     def set_is_code_file(self):
         return self.extension == '.py'
 
-    def set_ast(self):
+    def set_ast_and_modules(self):
         try:
             f = open(self.name, 'r')
-            ast = get_ast.make_ast(f.read())
+            code = f.read()
+            ast = get_ast.make_ast(code)
+            imports = get_ast.get_modules(code)
             f.close()
         except Exception as e:
             ast = {'error': "{}".format(e)}
-        return ast
+            imports = None
+        return ast, imports
+
 
     @classmethod
     def by_name_and_repo_id(cls, name, repo_id):

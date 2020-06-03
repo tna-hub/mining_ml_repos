@@ -1,0 +1,3 @@
+filename can be loaded:
+2) through assignment to a variable: myvar = 'filename.ext'
+2) through usage as argument in function call: func('filename.ext)

@@ -1,5 +1,9 @@
 import ast
+import dis
 import json
+from collections import defaultdict
+from pprint import pprint
+
 
 def classname(cls):
     return cls.__class__.__name__
@@ -78,14 +82,18 @@ def get_key(dict, val):
                 keyval[key] = value
     return keyval
 
-#def get_data()
 
-def test():
-    file = open("get_ast.py", "r")
-    filey = "get_ast_filey.csv"
-    f = file.read()
-    file.close()
-    jso = make_ast(f)
-    flat = flatten_json(jso)
-    print(json.dumps(flat, indent=True))
-    print(get_key(flat, "get_ast"))
+def get_modules(code):
+    instructions = dis.get_instructions(code)
+    imports = [__ for __ in instructions if 'IMPORT' in __.opname]
+
+    grouped = defaultdict(list)
+    for instr in imports:
+        grouped[instr.opname].append(instr.argval)
+
+    libraries = set()
+    for lib in grouped['IMPORT_NAME']:
+        libr = lib.split('.')[0]
+        libraries.add(libr)
+
+    return ','.join(list(libraries))

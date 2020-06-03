@@ -40,6 +40,7 @@ CREATE  TABLE "public".element (
 	repo_id              integer   ,
 	is_folder            bool  NOT NULL ,
 	extension            varchar   ,
+	imports              text   ,
 	CONSTRAINT element_pkey PRIMARY KEY ( id )
  );
 
