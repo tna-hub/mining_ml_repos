@@ -15,7 +15,7 @@ a) Downloaded the paper of code files (json)
 
 b) Extracted, through github API, the repos main language and the number of commits.the repositories with python as main language
 
-c)We filtered by removing duplicates and project that didn't have python as main language. Duplicates are projects that have the same github link. These are usually different versions of the paper but still linked to the same github repository.
+c)We filtered by removing duplicates and project that didn't have python 3 as main language (we focused only on python 3 because python 3 ast is not compatible with python 2 ast). Duplicates are projects that have the same github link. These are usually different versions of the paper but still linked to the same github repository.
 
 d) The result is a csv file with headers id; unique id of the repository, link; github link of the repo and nb_commits: total commits in the repository.
 
