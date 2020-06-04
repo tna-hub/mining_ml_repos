@@ -1,3 +1,8 @@
+First, identify the main import and export functions provided by the top  10 most commonly used libraries we found (Ex: panda import csv: import_cvs('filename'), panda export csv: df.to_csv('filename')) and those natively available in python (import: open('filena', 'w* or a*'); export: open('filename', 'r*)
+
 filename can be loaded:
-2) through assignment to a variable: myvar = 'filename.ext'
+1) through assignment to a variable: myvar = 'filename.ext'
 2) through usage as argument in function call: func('filename.ext)
+
+in each code file, check for a mention of any non code file or any folder in the code, identify if it is been assigned to a variable or not.
+If it is assigned to a variable, get the variable name, then try to find the ast tree where this variable is use (find connection between the first node where it is mentionned and the last node node.) walk the tree and check if there is any call of the libraries functions we identified that can be used for import or export.

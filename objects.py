@@ -43,10 +43,9 @@ class Repo(Base):
     def download(self):
         try:
             if not os.path.isdir(self.folder_name):
-                rp.clone_from(self.link, self.folder_name)
+                rp.clone_from(self.link.replace('://', '://:@'), self.folder_name)
             return True
         except Exception as e:
-            print(e)
             return False
 
     @classmethod

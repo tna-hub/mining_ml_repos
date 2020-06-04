@@ -16,12 +16,17 @@ def remove_readonly(func, path, _):
 
 for repo in session.query(Repo).all():
     print("{}. Downloading repository {}".format(repo.id, repo.name))
-    repo.download()
-    print("     -Extracting folders and files")
-    repo.extract_elements()
-    print("     -Extracting commits..., may take a while")
-    repo.set_commits()
-    print("     -All done! Deleting local repository ".format(repo.name))
-    shutil.rmtree(repo.folder_name, onerror=remove_readonly)
+    try:
+        if repo.download():
+            print("     -Extracting folders and files")
+            repo.extract_elements()
+            print("     -Extracting commits..., may take a while")
+            repo.set_commits()
+            print("     -All done! Deleting local repository ".format(repo.name))
+            shutil.rmtree(repo.folder_name, onerror=remove_readonly)
+        else:
+            print('    !!! Repository not found or is private. Skipping... !!!')
+    except Exception as e:
+        print(e)
 
 print('=================Finished Extraction! Everything was inserted to the database!===========================')
