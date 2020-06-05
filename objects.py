@@ -88,59 +88,52 @@ class Repo(Base):
                     session.flush()
 
     def set_commits(self):
-        f = True
-        while f:
-            try:
-                print('next commit')
-                commit = next(rpm(self.folder_name).traverse_commits())
-                com = Commit()
-                total = 0
-                for mod in commit.modifications:
-                    total += abs(mod.added) + abs(mod.removed)
-                    old_path = mod.old_path
-                    new_path = mod.new_path
-                    if old_path is None:
-                        path = new_path
-                    elif new_path is None:
-                        path = old_path
-                    elif old_path == new_path:
-                        path = old_path
-                    else:
-                        path = None
-                    if path is not None:
-                        path = "{}/{}".format(self.folder_name, path)
-                        file = Element.by_name_and_repo_id(path, self.id)
-                        if file is not None:
-                            data = {
-                                'file_id': file.id,
-                                'change_type': mod.change_type.name,
-                                'additions': mod.added,
-                                'deletions': mod.removed,
-                                'old_path': old_path,
-                                'new_path': new_path,
-                                'commit_id': com.id
-                            }
-                            com_mod = Commit_mod()
-                            com_mod.set_data(data)
-                            session.add(com_mod)
-                            session.commit()
-                            session.flush()
-                data = {
-                    'repo_id': self.id,
-                    'sha': commit.hash,
-                    'commit_date': commit.committer_date,
-                    'author_name': commit.author.name,
-                    'author_email': commit.author.email,
-                    'total_modifs': total
-                }
+        for commit in rpm(self.folder_name).traverse_commits():
+            com = Commit()
+            total = 0
+            for mod in commit.modifications:
+                total += abs(mod.added) + abs(mod.removed)
+                old_path = mod.old_path
+                new_path = mod.new_path
+                if old_path is None:
+                    path = new_path
+                elif new_path is None:
+                    path = old_path
+                elif old_path == new_path:
+                    path = old_path
+                else:
+                    path = None
+                if path is not None:
+                    path = "{}/{}".format(self.folder_name, path)
+                    file = Element.by_name_and_repo_id(path, self.id)
+                    if file is not None:
+                        data = {
+                            'file_id': file.id,
+                            'change_type': mod.change_type.name,
+                            'additions': mod.added,
+                            'deletions': mod.removed,
+                            'old_path': old_path,
+                            'new_path': new_path,
+                            'commit_id': com.id
+                        }
+                        com_mod = Commit_mod()
+                        com_mod.set_data(data)
+                        session.add(com_mod)
+                        session.commit()
+                        session.flush()
+            data = {
+                'repo_id': self.id,
+                'sha': commit.hash,
+                'commit_date': commit.committer_date,
+                'author_name': commit.author.name,
+                'author_email': commit.author.email,
+                'total_modifs': total
+            }
 
-                com.set_data(data)
-                session.add(com)
-                session.commit()
-                session.flush()
-            except StopIteration as e:
-                f = False
-
+            com.set_data(data)
+            session.add(com)
+            session.commit()
+            session.flush()
 
     @classmethod
     def get_commits(cls):
