@@ -56,7 +56,6 @@ class Repo(Base):
         for r, d, f in os.walk(self.folder_name):
             for file in f:
                 path = os.path.join(r, file)
-                print('        +Found file:', path)
                 el = Element(
                     is_folder=False,
                     name=path,
@@ -73,7 +72,6 @@ class Repo(Base):
 
             for folder in d:
                 path = os.path.join(r, folder)
-                print('        +Found folder:', path)
                 el = Element(
                     is_folder=True,
                     name=path,
