@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.automap import automap_base
 from git import Repo as rp
 
-import from_github
 import get_ast
 from pydriller import RepositoryMining as rpm
 import configparser
@@ -173,6 +172,7 @@ class Element(Base):
         except Exception as e:
             ast = {'error': "{}".format(e)}
             imports = None
+            code = None
         return ast, imports, code
 
 
