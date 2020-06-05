@@ -65,7 +65,7 @@ class Repo(Base):
                 el.extension = el.get_extension()
                 el.is_code_file = el.set_is_code_file()
                 if el.is_code_file:
-                    el.ast, el.imports = el.set_ast_and_modules()
+                    el.ast, el.imports, el.code = el.set_ast_and_modules()
                 if not el.ignore():
                     session.add(el)
                     session.commit()
@@ -175,7 +175,7 @@ class Element(Base):
         except Exception as e:
             ast = {'error': "{}".format(e)}
             imports = None
-        return ast, imports
+        return ast, imports, code
 
 
     @classmethod

@@ -37,6 +37,7 @@ CREATE  TABLE "public".element (
 	name                 varchar(500)   ,
 	is_code_file         bool   ,
 	ast                  json   ,
+	code                 text   ,
 	repo_id              integer   ,
 	is_folder            bool  NOT NULL ,
 	extension            varchar   ,
@@ -49,6 +50,9 @@ COMMENT ON TABLE "public".element IS 'Information of files of folders in the rep
 COMMENT ON COLUMN "public".element.is_code_file IS 'Set to True or False if file has code or not';
 
 COMMENT ON COLUMN "public".element.ast IS 'json ast of the file''s code';
+
+COMMENT ON COLUMN "public".element.code IS 'content of the file';
+
 
 COMMENT ON COLUMN "public".element.is_folder IS 'True if it is a folder, false if it is not';
 

@@ -20,7 +20,7 @@ for repo in session.query(Repo).all():
         if repo.download():
             print("     -Extracting folders and files")
             repo.extract_elements()
-            print("     -Extracting commits..., may take a while")
+            print("     -Extracting commits")
             repo.set_commits()
             print("     -All done! Deleting local repository ".format(repo.name))
             shutil.rmtree(repo.folder_name, onerror=remove_readonly)

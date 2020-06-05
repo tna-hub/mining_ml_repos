@@ -2,7 +2,7 @@ from objects import *
 import unittest
 
 Base.prepare(engine, reflect=True)
-repository = Repo.by_id(120)
+repository = Repo.by_id(2)
 
 class TestRepository(unittest.TestCase):
     def test_repo(self):
