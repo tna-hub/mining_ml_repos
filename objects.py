@@ -89,11 +89,38 @@ class Repo(Base):
 
     def set_commits(self):
         for commit in rpm(self.folder_name).traverse_commits():
-            print('        +Getting commit:', commit.hash)
             com = Commit()
-            com2 = from_github.get_commit(self.name, commit.hash)
-            stats = com2.stats if com2 is not None else None
-            total = stats.total if stats is not None else None
+            total = 0
+            for mod in commit.modifications:
+                total += abs(mod.added) + abs(mod.removed)
+                old_path = mod.old_path
+                new_path = mod.new_path
+                if old_path is None:
+                    path = new_path
+                elif new_path is None:
+                    path = old_path
+                elif old_path == new_path:
+                    path = old_path
+                else:
+                    path = None
+                if path is not None:
+                    path = "{}/{}".format(self.folder_name, path)
+                    file = Element.by_name_and_repo_id(path, self.id)
+                    if file is not None:
+                        data = {
+                            'file_id': file.id,
+                            'change_type': mod.change_type.name,
+                            'additions': mod.added,
+                            'deletions': mod.removed,
+                            'old_path': old_path,
+                            'new_path': new_path,
+                            'commit_id': com.id
+                        }
+                        com_mod = Commit_mod()
+                        com_mod.set_data(data)
+                        session.add(com_mod)
+                        session.commit()
+                        session.flush()
             data = {
                 'repo_id': self.id,
                 'sha': commit.hash,
@@ -102,37 +129,11 @@ class Repo(Base):
                 'author_email': commit.author.email,
                 'total_modifs': total
             }
+
             com.set_data(data)
             session.add(com)
             session.commit()
             session.flush()
-
-            if com2 is not None:
-                for mod in com2.files:
-                    old_path = mod.previous_filename
-                    new_path = mod.filename
-                    if old_path is None:
-                        path = new_path
-                    elif new_path is None:
-                        path = old_path
-                    elif old_path == new_path:
-                        path = old_path
-                    else:
-                        path = None
-                    if path is not None:
-                        path = "{}/{}".format(self.folder_name, path)
-                        file = Element.by_name_and_repo_id(path, self.id)
-                        if file is not None:
-                            data = {
-                                'file_id': file.id,
-                                'change_type': mod.status,
-                                'commit_id': com.id
-                            }
-                            com_mod = Commit_mod()
-                            com_mod.set_data(data)
-                            session.add(com_mod)
-                            session.commit()
-                            session.flush()
 
     @classmethod
     def get_commits(cls):
