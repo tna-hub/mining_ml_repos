@@ -8,6 +8,7 @@ from pprint import pprint
 def classname(cls):
     return cls.__class__.__name__
 
+
 def jsonify_ast(node, level=0):
     fields = {}
     if hasattr(node, '_fields'):
@@ -26,10 +27,16 @@ def jsonify_ast(node, level=0):
                     fields[k].append(jsonify_ast(e))
 
             elif isinstance(v, str):
-                fields[k] = v
+                if v == float('inf'):
+                    fields[k] = str(v)
+                else:
+                    fields[k] = v
 
             elif isinstance(v, int) or isinstance(v, float):
-                fields[k] = v
+                if v == float('inf'):
+                    fields[k] = str(v)
+                else:
+                    fields[k] = v
 
             elif v is None:
                 fields[k] = None
@@ -37,7 +44,7 @@ def jsonify_ast(node, level=0):
             else:
                 fields[k] = 'unrecognized'
 
-    ret = { classname(node): fields }
+    ret = {classname(node): fields}
     return ret
 
 
@@ -73,6 +80,7 @@ def flatten_json(nested_json):
 
     flatten(nested_json)
     return out
+
 
 def get_key(dict, val):
     keyval = {}

@@ -87,6 +87,18 @@ class Repo(Base):
     def set_commits(self):
         for commit in rpm(self.folder_name).traverse_commits():
             com = Commit()
+            data = {
+                'repo_id': self.id,
+                'sha': commit.hash,
+                'commit_date': commit.committer_date,
+                'author_name': commit.author.name,
+                'author_email': commit.author.email,
+                'total_modifs': 0
+            }
+            com.set_data(data)
+            session.add(com)
+            session.commit()
+            #session.flush()
             total = 0
             for mod in commit.modifications:
                 total += abs(mod.added) + abs(mod.removed)
@@ -117,20 +129,10 @@ class Repo(Base):
                         com_mod.set_data(data)
                         session.add(com_mod)
                         session.commit()
-                        session.flush()
-            data = {
-                'repo_id': self.id,
-                'sha': commit.hash,
-                'commit_date': commit.committer_date,
-                'author_name': commit.author.name,
-                'author_email': commit.author.email,
-                'total_modifs': total
-            }
-
-            com.set_data(data)
-            session.add(com)
+                        #session.flush()
+            com.total_modifs = total
             session.commit()
-            session.flush()
+            session.flush
 
     @classmethod
     def get_commits(cls):
@@ -203,7 +205,7 @@ class Commit(Base):
 
     @classmethod
     def by_sha(cls, sha):
-        return session.query(Commit).filter(Commit.sha == sha)
+        return session.query(Commit).filter(Commit.sha == sha).one()
 
 
 class Commit_mod(Base):

@@ -8,13 +8,13 @@ Base.prepare(engine, reflect=True)
 
 # fixes read only file deletion on windows
 def remove_readonly(func, path, _):
-
     # Clear the readonly bit and reattempt the removal
+    print("One error")
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
 
-for repo in session.query(Repo).all():
+for repo in session.query(Repo).filter(Repo.id > 4999, Repo.id < 6000).all():
     print("{}. Downloading repository {}".format(repo.id, repo.name))
     try:
         if repo.download():
@@ -27,6 +27,6 @@ for repo in session.query(Repo).all():
         else:
             print('    !!! Repository not found or is private. Skipping... !!!')
     except Exception as e:
-        print(e)
+        print("Error:", e)
 
 print('=================Finished Extraction! Everything was inserted to the database!===========================')
