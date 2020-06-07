@@ -14,7 +14,7 @@ def remove_readonly(func, path, _):
     func(path)
 
 
-for repo in session.query(Repo).filter(Repo.id > 5303, Repo.id < 5306).all():
+for repo in session.query(Repo).all():
     print("{}. Downloading repository {}".format(repo.id, repo.name))
     try:
         if repo.download():
