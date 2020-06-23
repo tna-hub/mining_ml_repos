@@ -7,5 +7,7 @@ itmsdf = data.frame(library = names(itms), frequency = itms)
 row.names(itmsdf) <- NULL
 colnames(itmsdf)
 head(itmsdf)
-itmsdf[order(itmsdf$frequency, decreasing = TRUE),]
-
+Orditmsdf <- itmsdf[order(itmsdf$frequency, decreasing = TRUE),]
+Orditmsdf <- Orditmsdf[Orditmsdf$frequency > 60,]
+head(Orditmsdf)
+write.csv(Orditmsdf, '~/PycharmProjects/mining_ml_repos/data/lib_frequency.csv', row.names = FALSE)
