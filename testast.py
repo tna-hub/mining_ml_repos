@@ -10,8 +10,8 @@ def test(a='hello'):
     with open(file='testast.py') as f:
         ast_python = get_ast.code_ast(f.read())
         #print(ast_python.json_ast)
-        res = get_ast.flatten_json(ast_python.json_ast)
-        pprint.pprint(res)
+        #res = get_ast.flatten_json(ast_python.json_ast)
+        #pprint.pprint(res)
         pprint.pprint(ast_python.calls)
 
         #for k, v in res.items():

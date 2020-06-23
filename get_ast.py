@@ -22,10 +22,8 @@ class code_ast:
             arguments = {}
             if hasattr(node.func, 'attr'):
                 name = node.func.attr
-                print("function call", repr(node.func.attr))
             elif hasattr(node.func, 'id'):
                 name = node.func.id
-                print("function call", repr(node.func.id))
             if hasattr(node, 'args'):
                 i = 0
                 for arg in node.args:
