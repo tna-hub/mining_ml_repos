@@ -19,23 +19,48 @@ class code_ast:
 
     def get_calls(self, node):
         if classname(node) == 'Call':
-            arguments = {}
+            infos = {}
+            attr_value = None
+            arguments = []
+
             if hasattr(node.func, 'attr'):
                 name = node.func.attr
+                if classname(node.func.value) == 'Name':
+                    attr_value = node.func.value.id
             elif hasattr(node.func, 'id'):
                 name = node.func.id
             if hasattr(node, 'args'):
                 i = 0
                 for arg in node.args:
                     if classname(arg) == 'Str':
-                        arguments[i] = arg.s
+                        argument = {}
+                        argument['type'] = 'str'
+                        argument['position'] = i
+                        argument['value'] = arg.s
+                        arguments.append(argument)
                     i = i + 1
+                infos['attr_value'] = attr_value
+                infos['args'] = arguments
             if hasattr(node, 'keywords'):
                 for keyword in node.keywords:
                     if hasattr(keyword, 'arg') and hasattr(keyword, 'value'):
                         if classname(keyword.value) == 'Str':
-                            arguments[keyword.arg] = keyword.value.s
-            self.calls[name] = arguments
+                            argument = {}
+                            argument['type'] = 'str'
+                            argument['position'] = keyword.arg
+                            argument['value'] = keyword.value.s
+                            arguments.append(argument)
+                        elif classname(keyword.value) == 'Name':
+                            argument = {}
+                            argument['type'] = 'var'
+                            argument['position'] = keyword.arg
+                            argument['varname'] = keyword.value.id
+                            argument['value'] = None
+                            arguments.append(argument)
+
+                infos['attr_value'] = attr_value
+                infos['args'] = arguments
+            self.calls[name] = infos
 
 
     def jsonify_ast(self, node, level=0):
