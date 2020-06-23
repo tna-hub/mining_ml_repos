@@ -4,50 +4,51 @@ import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import apriori
 import configparser
+import csv
+import time
 
 Base.prepare(engine, reflect=True)
 
 config = configparser.ConfigParser(inline_comment_prefixes="#")
 config.read('data/config.ini')
 
-min_lift= config['rq1']['min_lift']
+min_lift = config['rq1']['min_lift']
 min_support = config['rq1']['min_support']
 min_confidence = config['rq1']['min_confidence']
 
 modules = []
 
 
-def do_add(s, x):
-    length = len(s)
-    s.add(x)
-    return len(s) != length
+def set_uniq_modules(repo_id):
+    uniq_modules = set()
+    for file in session.query(Element).filter(Element.repo_id == repo_id,
+                                              Element.is_code_file == True).all():
+        imports = file.imports
+        if imports is not None:
+            for module in imports.split(','):
+                if module:
+                    uniq_modules.add(module)
+    nb_uniq_modules = len(uniq_modules)
+    if nb_uniq_modules > 0:
+        return list(uniq_modules)
+    return None
 
 
-def set_mods():
-    for i in range(2, 5):
-        repo_mods = set()
-        for file in session.query(Element).filter(Element.repo_id == i,
-                                                  Element.is_code_file == True).all():
-            imports = file.imports
-            if imports is not None:
-                for mod in imports.split(','):
-                    if mod != '':
-                        do_add(repo_mods, mod)
-        if len(repo_mods) > 0:
-            print(len(repo_mods), 'unique modules in repository', i)
-            modules.append(list(repo_mods))
-    return modules
+def main():
+    start_time = time.time()
+    print("=======================Starting to get unique modules and saving to file==========================")
+    for repo_id in range(2, 14165):
+        uniq_modules = set_uniq_modules(repo_id)
+        if uniq_modules is not None:
+            print("{}: {} unique repositories. Elapsed time: {:.2f} min".format(repo_id,
+                                                                                len(uniq_modules),
+                                                                                (time.time() - start_time) / 60))
+
+            with open('data/uniq_modules.csv', 'a+') as f:
+                wr = csv.writer(f)
+                wr.writerow(uniq_modules)
+    print("=======================Finished! Well done!==========================")
 
 
-dataset = set_mods()
-pprint(dataset)
-
-te = TransactionEncoder()
-te_ary = te.fit(dataset).transform(dataset)
-df = pd.DataFrame(te_ary, columns=te.columns_)
-print(df)
-
-frequent_itemsets = apriori(df, min_support=0.6, use_colnames=True)
-frequent_itemsets['length'] = frequent_itemsets['itemsets'].apply(lambda x: len(x))
-print(frequent_itemsets[(frequent_itemsets['length'] == 1) &
-                        (frequent_itemsets['support'] >= 0.8)])
+if __name__ == "__main__":
+    main()
