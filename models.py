@@ -1,13 +1,15 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
-
+# Code and python ast classes
 class Code(Base):
     __tablename__ = 'code'
     id = Column(Integer, primary_key=True)
+    element_id = relationship("Element", back_populates="code")
+    json_ast = Column(JSON, comment="json ast of the file's code")
     importfroms = relationship('ImportFrom', backref='code', lazy='dynamic')
     imports = relationship('Import', backref='code', lazy='dynamic')
     assigns = relationship('Assign', backref='code', lazy='dynamic')
@@ -18,7 +20,7 @@ class Code(Base):
 
 
 class ImportFrom(Base):
-    __tablename__ = 'importfrom'
+    __tablename__ = 'import_from'
     id = Column(Integer, primary_key=True)
     module = Column(String)
     name = Column(String)
@@ -49,14 +51,14 @@ class Call(Base):
     # TODO
 
 class ClassDef(Base):
-    __tablename__ = 'classdef'
+    __tablename__ = 'class_def'
     id = Column(Integer, primary_key=True)
     lineno = Column(Integer)
     # TODO
 
 
 class FunctionDef(Base):
-    __tablename__ = 'functiondef'
+    __tablename__ = 'function_def'
     lineno = Column(Integer)
     # TODO
 
