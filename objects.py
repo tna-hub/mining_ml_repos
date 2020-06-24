@@ -216,3 +216,34 @@ class Commit_mod(Base):
         self.file_id = data['file_id']
         self.change_type = data['change_type']
         self.commit_id = data['commit_id']
+
+import inspect
+import importlib
+import ast
+
+
+class Imports(ast.NodeVisitor):
+    def visit_Import(self, node):
+        print("In Import")
+        for imp in node.names:
+            if imp.asname is not None:
+                print("module name = {}, alias = {}".format(imp.name, imp.asname))
+            else:
+                print("module name = {}".format(imp.name))
+        print()
+
+    def visit_ImportFrom(self, node):
+        print("In ImportFrom")
+        for imp in node.names:
+            if imp.asname is not None:
+                print("module = {}\nname = {}\nalias = {}\nlevel = {}\n".
+                      format(node.module, imp.name, imp.asname, node.level))
+            else:
+                print("module = {}\nname = {}\nlevel = {}\n".
+                      format(node.module, imp.name, node.level))
+        print()
+
+mod = "temp_test"
+mod = importlib.import_module(mod)
+p = ast.parse(inspect.getsource(mod))
+Imports().visit(p)
