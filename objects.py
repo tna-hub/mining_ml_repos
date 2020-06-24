@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.automap import automap_base
 from git import Repo as rp
 
-import from_github
 import get_ast
 from pydriller import RepositoryMining as rpm
 import configparser
@@ -43,10 +42,9 @@ class Repo(Base):
     def download(self):
         try:
             if not os.path.isdir(self.folder_name):
-                rp.clone_from(self.link, self.folder_name)
+                rp.clone_from(self.link.replace('://', '://:@'), self.folder_name)
             return True
         except Exception as e:
-            print(e)
             return False
 
     @classmethod
@@ -57,7 +55,6 @@ class Repo(Base):
         for r, d, f in os.walk(self.folder_name):
             for file in f:
                 path = os.path.join(r, file)
-                print('        +Found file:', path)
                 el = Element(
                     is_folder=False,
                     name=path,
@@ -66,7 +63,7 @@ class Repo(Base):
                 el.extension = el.get_extension()
                 el.is_code_file = el.set_is_code_file()
                 if el.is_code_file:
-                    el.ast, el.imports = el.set_ast_and_modules()
+                    el.ast, el.imports, el.code = el.set_ast_and_modules()
                 if not el.ignore():
                     session.add(el)
                     session.commit()
@@ -74,7 +71,6 @@ class Repo(Base):
 
             for folder in d:
                 path = os.path.join(r, folder)
-                print('        +Found folder:', path)
                 el = Element(
                     is_folder=True,
                     name=path,
@@ -90,50 +86,53 @@ class Repo(Base):
 
     def set_commits(self):
         for commit in rpm(self.folder_name).traverse_commits():
-            print('        +Getting commit:', commit.hash)
             com = Commit()
-            com2 = from_github.get_commit(self.name, commit.hash)
-            stats = com2.stats if com2 is not None else None
-            total = stats.total if stats is not None else None
             data = {
                 'repo_id': self.id,
                 'sha': commit.hash,
                 'commit_date': commit.committer_date,
                 'author_name': commit.author.name,
                 'author_email': commit.author.email,
-                'total_modifs': total
+                'total_modifs': 0
             }
             com.set_data(data)
             session.add(com)
             session.commit()
-            session.flush()
-
-            if com2 is not None:
-                for mod in com2.files:
-                    old_path = mod.previous_filename
-                    new_path = mod.filename
-                    if old_path is None:
-                        path = new_path
-                    elif new_path is None:
-                        path = old_path
-                    elif old_path == new_path:
-                        path = old_path
-                    else:
-                        path = None
-                    if path is not None:
-                        path = "{}/{}".format(self.folder_name, path)
-                        file = Element.by_name_and_repo_id(path, self.id)
-                        if file is not None:
-                            data = {
-                                'file_id': file.id,
-                                'change_type': mod.status,
-                                'commit_id': com.id
-                            }
-                            com_mod = Commit_mod()
-                            com_mod.set_data(data)
-                            session.add(com_mod)
-                            session.commit()
-                            session.flush()
+            #session.flush()
+            total = 0
+            for mod in commit.modifications:
+                total += abs(mod.added) + abs(mod.removed)
+                old_path = mod.old_path
+                new_path = mod.new_path
+                if old_path is None:
+                    path = new_path
+                elif new_path is None:
+                    path = old_path
+                elif old_path == new_path:
+                    path = old_path
+                else:
+                    path = None
+                if path is not None:
+                    path = "{}/{}".format(self.folder_name, path)
+                    file = Element.by_name_and_repo_id(path, self.id)
+                    if file is not None:
+                        data = {
+                            'file_id': file.id,
+                            'change_type': mod.change_type.name,
+                            'additions': mod.added,
+                            'deletions': mod.removed,
+                            'old_path': old_path,
+                            'new_path': new_path,
+                            'commit_id': com.id
+                        }
+                        com_mod = Commit_mod()
+                        com_mod.set_data(data)
+                        session.add(com_mod)
+                        session.commit()
+                        #session.flush()
+            com.total_modifs = total
+            session.commit()
+            session.flush
 
     @classmethod
     def get_commits(cls):
@@ -175,7 +174,8 @@ class Element(Base):
         except Exception as e:
             ast = {'error': "{}".format(e)}
             imports = None
-        return ast, imports
+            code = None
+        return ast, imports, code
 
 
     @classmethod
@@ -205,7 +205,7 @@ class Commit(Base):
 
     @classmethod
     def by_sha(cls, sha):
-        return session.query(Commit).filter(Commit.sha == sha)
+        return session.query(Commit).filter(Commit.sha == sha).one()
 
 
 class Commit_mod(Base):

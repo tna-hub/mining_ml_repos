@@ -8,45 +8,106 @@ from pprint import pprint
 def classname(cls):
     return cls.__class__.__name__
 
-def jsonify_ast(node, level=0):
-    fields = {}
-    if hasattr(node, '_fields'):
-        for k in node._fields:
-            fields[k] = '...'
-            v = getattr(node, k)
-            if isinstance(v, ast.AST):
-                if v._fields:
-                    fields[k] = jsonify_ast(v)
+
+
+
+
+class code_ast:
+    def __init__(self, code):
+        self.calls = {}
+        self.json_ast = self.make_ast(code)
+
+    def get_calls(self, node):
+        if classname(node) == 'Call':
+            infos = {}
+            attr_value = None
+            arguments = []
+
+            if hasattr(node.func, 'attr'):
+                name = node.func.attr
+                if classname(node.func.value) == 'Name':
+                    attr_value = node.func.value.id
+            elif hasattr(node.func, 'id'):
+                name = node.func.id
+            if hasattr(node, 'args'):
+                i = 0
+                for arg in node.args:
+                    if classname(arg) == 'Str':
+                        argument = {}
+                        argument['type'] = 'str'
+                        argument['position'] = i
+                        argument['value'] = arg.s
+                        arguments.append(argument)
+                    i = i + 1
+                infos['attr_value'] = attr_value
+                infos['args'] = arguments
+            if hasattr(node, 'keywords'):
+                for keyword in node.keywords:
+                    if hasattr(keyword, 'arg') and hasattr(keyword, 'value'):
+                        if classname(keyword.value) == 'Str':
+                            argument = {}
+                            argument['type'] = 'str'
+                            argument['position'] = keyword.arg
+                            argument['value'] = keyword.value.s
+                            arguments.append(argument)
+                        elif classname(keyword.value) == 'Name':
+                            argument = {}
+                            argument['type'] = 'var'
+                            argument['position'] = keyword.arg
+                            argument['varname'] = keyword.value.id
+                            argument['value'] = None
+                            arguments.append(argument)
+
+                infos['attr_value'] = attr_value
+                infos['args'] = arguments
+            self.calls[name] = infos
+
+
+    def jsonify_ast(self, node, level=0):
+        fields = {}
+        if hasattr(node, '_fields'):
+            self.get_calls(node)
+            for k in node._fields:
+                fields[k] = '...'
+                v = getattr(node, k)
+                if isinstance(v, ast.AST):
+                    if v._fields:
+                        fields[k] = self.jsonify_ast(v)
+                    else:
+                        fields[k] = classname(v)
+
+                elif isinstance(v, list):
+                    fields[k] = []
+                    for e in v:
+                        fields[k].append(self.jsonify_ast(e))
+
+                elif isinstance(v, str):
+                    if v == float('inf'):
+                        fields[k] = str(v)
+                    else:
+                        fields[k] = v
+
+                elif isinstance(v, int) or isinstance(v, float):
+                    if v == float('inf'):
+                        fields[k] = str(v)
+                    else:
+                        fields[k] = v
+
+                elif v is None:
+                    fields[k] = None
+
                 else:
-                    fields[k] = classname(v)
+                    fields[k] = 'unrecognized'
 
-            elif isinstance(v, list):
-                fields[k] = []
-                for e in v:
-                    fields[k].append(jsonify_ast(e))
+        ret = {classname(node): fields}
+        return ret
 
-            elif isinstance(v, str):
-                fields[k] = v
-
-            elif isinstance(v, int) or isinstance(v, float):
-                fields[k] = v
-
-            elif v is None:
-                fields[k] = None
-
-            else:
-                fields[k] = 'unrecognized'
-
-    ret = { classname(node): fields }
-    return ret
-
-
-def make_ast(code):
-    try:
-        tree = ast.parse(code)
-        return jsonify_ast(tree)
-    except Exception as e:
-        return {'error': "{}".format(e)}
+    def make_ast(self, code):
+        try:
+            tree = ast.parse(code)
+            return self.jsonify_ast(tree)
+        except Exception as e:
+            return {'error': "{}".format(e)}
 
 
 def flatten_json(nested_json):
@@ -73,6 +134,7 @@ def flatten_json(nested_json):
 
     flatten(nested_json)
     return out
+
 
 def get_key(dict, val):
     keyval = {}

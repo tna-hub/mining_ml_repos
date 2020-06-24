@@ -3,3 +3,5 @@ psycopg2
 SQLAlchemy
 PyDriller
 PyGithub
+pandas
+mlxtend
