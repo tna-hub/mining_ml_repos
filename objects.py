@@ -168,7 +168,8 @@ class Element(Base):
         try:
             f = open(self.name, 'r')
             code = f.read()
-            ast = get_ast.make_ast(code)
+
+            ast = get_ast.code_ast(code).json_ast
             imports = get_ast.get_modules(code)
             f.close()
         except Exception as e:

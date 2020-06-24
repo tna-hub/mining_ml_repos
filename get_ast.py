@@ -9,13 +9,19 @@ def classname(cls):
     return cls.__class__.__name__
 
 
-
-
-
 class code_ast:
     def __init__(self, code):
         self.calls = {}
+        self.assigns = []
         self.json_ast = self.make_ast(code)
+
+    def get_assigns(self, node):
+        if classname(node) == 'Assign':
+            assign = {}
+            if hasattr(node, 'targets') and hasattr(node, 'value'):
+                if classname(node.value) == 'Str' and classname(node.targets[0]) == 'Name':
+                    assign[node.targets[0].id] = node.value.s
+                    self.assigns.append(assign)
 
     def get_calls(self, node):
         if classname(node) == 'Call':
@@ -38,6 +44,22 @@ class code_ast:
                         argument['position'] = i
                         argument['value'] = arg.s
                         arguments.append(argument)
+                    elif classname(arg) == 'Name':
+                        argument = {}
+                        argument['type'] = 'var'
+                        argument['position'] = i
+                        argument['varname'] = arg.id
+                        argument['value'] = None
+                        found = False
+                        for var in reversed(self.assigns):
+                            for key in var.keys():
+                                if key == arg.id:
+                                    argument['value'] = var[key]
+                                    found = True
+                            if found:
+                                break
+                        arguments.append(argument)
+
                     i = i + 1
                 infos['attr_value'] = attr_value
                 infos['args'] = arguments
@@ -56,16 +78,24 @@ class code_ast:
                             argument['position'] = keyword.arg
                             argument['varname'] = keyword.value.id
                             argument['value'] = None
+                            found = False
+                            for var in reversed(self.assigns):
+                                for key in var.keys():
+                                    if key == keyword.value.id:
+                                        argument['value'] = var[key]
+                                        found = True
+                                if found:
+                                    break
                             arguments.append(argument)
 
                 infos['attr_value'] = attr_value
                 infos['args'] = arguments
             self.calls[name] = infos
 
-
     def jsonify_ast(self, node, level=0):
         fields = {}
         if hasattr(node, '_fields'):
+            self.get_assigns(node)
             self.get_calls(node)
             for k in node._fields:
                 fields[k] = '...'

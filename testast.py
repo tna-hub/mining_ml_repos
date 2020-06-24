@@ -6,15 +6,19 @@ import pprint
 
 
 def test(a='hello'):
-    hell = 'test'.split(',')[0]
-    filename = 'testast.py'
+    hell = 'test'
+    filename = 'mzeageththt'
+    filename = 'objects.py'
     with open(file=filename, mode='r') as f:
-        filename = None
+        filename = 'hello'
         ast_python = get_ast.code_ast(f.read())
+        hell = 'quoi que vous fassiez'
+        print(hell)
         #print(ast_python.json_ast)
         res = get_ast.flatten_json(ast_python.json_ast)
-        pprint.pprint(res)
+        #pprint.pprint(res)
         pprint.pprint(ast_python.calls)
+        #pprint.pprint(ast_python.assigns)
 
         #for k, v in res.items():
             #if 'Str_s' in k:
