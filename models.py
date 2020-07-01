@@ -97,7 +97,7 @@ class Dataset(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    element_id = Column(ForeignKey('element.id'), nullable=True)
+    element_id = Column(ForeignKey('element.id'))
     heuristic = Column(String(2), nullable=False, comment='The heuristic used to identify as dataset')
     repo_id = Column(ForeignKey('repo.id'), nullable=False)
     loaded_in = relationship(
