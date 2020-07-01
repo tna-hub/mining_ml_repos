@@ -3,14 +3,7 @@ import ast
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 
-import models
-from sqlalchemy.orm import sessionmaker, scoped_session
-from objects import *
-
-# Session = sessionmaker(bind=models.engine2)
-# session = Session()
-Base.prepare(engine, reflect=True)
-
+from models import *
 mod = '''from bisect import bisect_left as bs
 import datetime as dt
 import time
@@ -22,14 +15,21 @@ def foo():
 class Foo():
     def test(self):
         from re import compile as cp, finditer as ft'''
-'''
-for repo2 in session.query(Repo).all():
-    print('duplicating repository  number', repo2.id)
-    repo = models.Repo(id=repo2.id, name=repo2.name, link=repo2.link, nb_commits=repo2.nb_commits,
-                       folder_name=repo2.folder_name)
-    models.session.add(repo)
-    models.session.commit()
 
+for repo in session.query(Repo).filter(Repo.id == 4):
+    print('Getting list of code files  for repo', repo.id)
+    cfs = repo.get_code_files()
+    print('Getting list of non code files  for repo', repo.id)
+    ncfs = repo.get_non_code_files()
+    for cf in cfs:
+        if cf.code.content:
+            ast_code = code_ast(cf.code.content)
+            cf.code.visit(root)
+            print('Strings found in file ', cf.name)
+            for str in cf.code.strs:
+                print('     ', str.content)
+
+'''
 for comm in session.query(Commit).all():
     print('duplicating commit  number', comm.id)
 
@@ -37,7 +37,7 @@ for comm in session.query(Commit).all():
                            author_name=comm.author_name, author_email=comm.author_email,
                            total_modifs=comm.total_modifs)
     models.session.add(commit)
-    models.session.commit()'''
+    models.session.commit()
 
 for elem in session.query(Element).yield_per(1):
     print('duplicating Element number', elem.id)
@@ -66,4 +66,4 @@ code.visit(p)
 session.add(code)
 session.commit()
 for imp in code.imports:
-    print(imp.module, imp.alias)"""
+    print(imp.module, imp.alias)"""'''

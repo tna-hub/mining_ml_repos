@@ -1,10 +1,13 @@
 import ast
+import os
+import sys
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, JSON, String, Text, Table
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 import configparser
+from get_ast import code_ast
 
 config = configparser.ConfigParser()
 config.read('data/config.ini')
@@ -44,9 +47,19 @@ class Repo(Base):
     elements = relationship('Element', backref='repo', lazy='dynamic')
 
     def set_datafiles(self):
+        # TODO
         return
 
 
+    def get_code_files(self):
+        for el in self.elements:
+            if el.is_code_file == True:
+                yield el
+
+    def get_non_code_files(self):
+        for el in self.elements:
+            if el.is_code_file == False:
+                yield el
 class Commit(Base):
     __tablename__ = 'commit'
 
@@ -125,6 +138,7 @@ class Code(ast.NodeVisitor, Base):
     function_defs = relationship('FunctionDef', backref='code', lazy='dynamic')
     strs = relationship('Str', backref='code', lazy='dynamic')
 
+
     def visit_Import(self, node):
         for imp in node.names:
             self.imports.append(Import(module=imp.name, alias=imp.asname))
@@ -132,6 +146,43 @@ class Code(ast.NodeVisitor, Base):
     def visit_ImportFrom(self, node):
         for imp in node.names:
             self.import_froms.append(ImportFrom(module=node.module, name=imp.name, alias=imp.asname, level=node.level))
+
+
+    def is_pathname_valid(pathname: str) -> bool:
+        ERROR_INVALID_NAME = 123  # Windows-specific error code indicating an invalid pathname.
+        '''
+        `True` if the passed pathname is a valid pathname for the current OS;
+        `False` otherwise.
+        '''
+        try:
+            if not isinstance(pathname, str) or not pathname:
+                return False
+            _, pathname = os.path.splitdrive(pathname)
+            root_dirname = os.environ.get('HOMEDRIVE', 'C:') \
+                if sys.platform == 'win32' else os.path.sep
+            assert os.path.isdir(root_dirname)
+            root_dirname = root_dirname.rstrip(os.path.sep) + os.path.sep
+            for pathname_part in pathname.split(os.path.sep):
+                try:
+                    os.lstat(root_dirname + pathname_part)
+                except OSError as exc:
+                    if hasattr(exc, 'winerror'):
+                        if exc.winerror == ERROR_INVALID_NAME:
+                            return False
+                    elif exc.errno in {errno.ENAMETOOLONG, errno.ERANGE}:
+                        return False
+        except TypeError as exc:
+            return False
+        else:
+            return True
+
+    def get_str(self, node):
+        content = node.s
+        if content and '\n' not in content and is_pathname_valid(content):
+            self.strs.append(Str(lineno=node.lineno, code_id=self.id, content=node.s))
+
+    def get_assigns(self, ast_code):
+        return
 
 
 class ImportFrom(Base):
@@ -184,13 +235,63 @@ class FunctionDef(Base):
     # TODO
 
 
+
 class Str(Base):
     __tablename__ = 'str'
     id = Column(Integer, primary_key=True)
     lineno = Column(Integer)
     code_id = Column(Integer, ForeignKey('code.id'))
-    # TODO
+    content = Column(String)
+
+
+
+
+import errno, os
+
+ERROR_INVALID_NAME = 123 #Windows-specific error code indicating an invalid pathname.
+
+def is_pathname_valid(pathname: str) -> bool:
+    '''
+    `True` if the passed pathname is a valid pathname for the current OS;
+    `False` otherwise.
+    '''
+    try:
+        if not isinstance(pathname, str) or not pathname:
+            return False
+        _, pathname = os.path.splitdrive(pathname)
+        root_dirname = os.environ.get('HOMEDRIVE', 'C:') \
+            if sys.platform == 'win32' else os.path.sep
+        assert os.path.isdir(root_dirname)
+        root_dirname = root_dirname.rstrip(os.path.sep) + os.path.sep
+        for pathname_part in pathname.split(os.path.sep):
+            try:
+                os.lstat(root_dirname + pathname_part)
+            except OSError as exc:
+                if hasattr(exc, 'winerror'):
+                    if exc.winerror == ERROR_INVALID_NAME:
+                        return False
+                elif exc.errno in {errno.ENAMETOOLONG, errno.ERANGE}:
+                    return False
+    except TypeError as exc:
+        return False
+    else:
+        return True
 
 
 if __name__ == '__main__':
-    Base.metadata.create_all(engine2)
+    metadata.create_all(engine2)
+    #session.commit()
+    #print(os.path.basename(os.path.normpath('/ folderD.txt')))
+    #print('is it absolute?', os.path.isabs('/home/user'))
+    #print('"foo.bar" valid? ' + str(is_pathname_valid("hello it's me \n i was")))
+    code = '''
+lontext = """
+    this a '/long
+    long text"""
+with open('file.txt', 'w') as f:
+    with open('fileiijo.txt', 'w') as v:
+        print('hello How are you')
+'''
+    root = ast.parse(code)
+    c = Code()
+    c.visit(root)
