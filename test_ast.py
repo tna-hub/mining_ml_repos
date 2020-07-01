@@ -27,11 +27,41 @@ class Imports(ast.NodeVisitor):
                       format(node.module, imp.name, node.level))
         print()
 
+import ast
+
+import get_ast
+import pprint
+#from pattern import ShowStrings
+
+
+def test_json_ast(a='hello'):
+    hell = 'test'
+    filename = 'mzeageththt'
+    filename = 'objects.py'
+    with open(file=filename, mode='r') as f:
+        filename = 'hello'
+        ast_python = get_ast.code_ast(f.read())
+        hell = 'quoi que vous fassiez'
+        print(hell)
+        #print(ast_python.json_ast)
+        res = get_ast.flatten_json(ast_python.json_ast)
+        #pprint.pprint(res)
+        pprint.pprint(ast_python.calls)
+        #pprint.pprint(ast_python.assigns)
+
+        #for k, v in res.items():
+            #if 'Str_s' in k:
+                #print(k, v)
+
+
+
+
+
 mod = '''from bisect import bisect_left as bs
 import datetime
 import time
 import numpy as np
-from pandas.arrays import hello as b
+from pandas.arrays import *
 def foo():
     from re import findall
 class Foo():

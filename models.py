@@ -1,6 +1,8 @@
+import ast
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, JSON, String, Text, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 import configparser
 
@@ -12,19 +14,20 @@ user = config['postgresql']['user']
 passwd = config['postgresql']['passwd']
 db = config['postgresql']['db']
 
-engine = create_engine('postgresql+psycopg2://{}:{}@{}/{}'.format(user,
-                                                                  passwd,
-                                                                  host,
-                                                                  db), echo=True)
-
+engine2 = create_engine('postgresql+psycopg2://{}:{}@{}/{}'.format(user,
+                                                                   passwd,
+                                                                   host,
+                                                                   db))
 
 Base = declarative_base()
 metadata = Base.metadata
-
+Session = sessionmaker(bind=engine2)
+session = Session()
 assoc_file_dataset = Table('assoc_file_dataset', metadata,
                            Column('dataset_id', Integer, ForeignKey('dataset.id')),
                            Column('loaded_in', Integer, ForeignKey('element.id'))
                            )
+
 
 # Git classes
 
@@ -39,6 +42,9 @@ class Repo(Base):
     folder_name = Column(String(500))
     commits = relationship('Commit', backref='repo', lazy='dynamic')
     elements = relationship('Element', backref='repo', lazy='dynamic')
+
+    def set_datafiles(self):
+        return
 
 
 class Commit(Base):
@@ -60,8 +66,9 @@ class CommitModification(Base):
     id = Column(Integer, primary_key=True, )
     change_type = Column(String)
     commit_id = Column(Integer, ForeignKey('commit.id'))
-    commit = relationship("Commit", back_populates="commit_modifications")
     file_id = Column(Integer, ForeignKey('element.id'), nullable=False)
+
+    commit = relationship("Commit", back_populates="commit_modifications")
     file = relationship("Element", back_populates="commit_modifications")
 
 
@@ -89,7 +96,8 @@ class Dataset(Base):
     __tablename__ = 'dataset'
 
     id = Column(Integer, primary_key=True)
-    element_id = Column(ForeignKey('element.id'), nullable=False)
+    name = Column(String)
+    element_id = Column(ForeignKey('element.id'), nullable=True)
     heuristic = Column(String(2), nullable=False, comment='The heuristic used to identify as dataset')
     repo_id = Column(ForeignKey('repo.id'), nullable=False)
     loaded_in = relationship(
@@ -98,17 +106,15 @@ class Dataset(Base):
         back_populates="load_files")
 
 
-
-
 # Code and python ast classes
-class Code(Base):
+class Code(ast.NodeVisitor, Base):
     __tablename__ = 'code'
     id = Column(Integer, primary_key=True)
     content = Column(Text)
-    file_id = Column('Element', ForeignKey('element.id'))
+    file_id = Column('element', ForeignKey('element.id'))
     json_ast = Column(JSON, comment="json ast of the file's code")
 
-    file = relationship('Element', back_populates="code")  # One to One relation with table Element
+    element = relationship('Element', back_populates="code")  # One to One relation with table Element
 
     # One to Many relations
     import_froms = relationship('ImportFrom', backref='code', lazy='dynamic')
@@ -118,6 +124,14 @@ class Code(Base):
     class_defs = relationship('ClassDef', backref='code', lazy='dynamic')
     function_defs = relationship('FunctionDef', backref='code', lazy='dynamic')
     strs = relationship('Str', backref='code', lazy='dynamic')
+
+    def visit_Import(self, node):
+        for imp in node.names:
+            self.imports.append(Import(module=imp.name, alias=imp.asname))
+
+    def visit_ImportFrom(self, node):
+        for imp in node.names:
+            self.import_froms.append(ImportFrom(module=node.module, name=imp.name, alias=imp.asname, level=node.level))
 
 
 class ImportFrom(Base):
@@ -142,6 +156,7 @@ class Assign(Base):
     __tablename__ = 'assign'
     id = Column(Integer, primary_key=True)
     lineno = Column(Integer)
+    code_id = Column(Integer, ForeignKey('code.id'))
     # TODO
 
 
@@ -149,6 +164,7 @@ class Call(Base):
     __tablename__ = 'call'
     id = Column(Integer, primary_key=True)
     lineno = Column(Integer)
+    code_id = Column(Integer, ForeignKey('code.id'))
     # TODO
 
 
@@ -156,6 +172,7 @@ class ClassDef(Base):
     __tablename__ = 'class_def'
     id = Column(Integer, primary_key=True)
     lineno = Column(Integer)
+    code_id = Column(Integer, ForeignKey('code.id'))
     # TODO
 
 
@@ -163,6 +180,7 @@ class FunctionDef(Base):
     __tablename__ = 'function_def'
     id = Column(Integer, primary_key=True)
     lineno = Column(Integer)
+    code_id = Column(Integer, ForeignKey('code.id'))
     # TODO
 
 
@@ -170,7 +188,9 @@ class Str(Base):
     __tablename__ = 'str'
     id = Column(Integer, primary_key=True)
     lineno = Column(Integer)
+    code_id = Column(Integer, ForeignKey('code.id'))
     # TODO
 
+
 if __name__ == '__main__':
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine2)
