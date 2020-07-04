@@ -2,6 +2,8 @@ import inspect
 import importlib
 import ast
 
+#from models import Call
+
 
 class Imports(ast.NodeVisitor):
     def visit_Import(self, node):
@@ -33,27 +35,67 @@ import get_ast
 import pprint
 #from pattern import ShowStrings
 
+class binop(ast.NodeVisitor):
+    def visit_BinOp(self, node):
+        a = 'first assign'
+        b = a
+        c = a + b
+        cons = get_binop_contants(node, [])
+        if cons is not None:
+            res = ''
+            for con in cons:
+                res += str(con)
+            print('result', res)
 
 def test_json_ast(a='hello'):
     hell = 'test'
-    filename = 'mzeageththt'
-    filename = 'objects.py'
-    with open(file=filename, mode='r') as f:
-        filename = 'hello'
+    #filename = 'mzeageththt'
+    filename = 'old_ast.py'
+    with open(file='old_ast.py', mode='r') as f:
+        #filename = 'hello'
         ast_python = get_ast.code_ast(f.read())
-        hell = 'quoi que vous fassiez'
-        print(hell)
+        node = ast.parse(f.read())
+        b = binop()
+        b.visit(node)
+        node.lineno = 12
+        #print(hell)
         #print(ast_python.json_ast)
         res = get_ast.flatten_json(ast_python.json_ast)
-        #pprint.pprint(res)
-        pprint.pprint(ast_python.calls)
+        pprint.pprint(res)
+        #pprint.pprint(ast_python.calls)
         #pprint.pprint(ast_python.assigns)
 
         #for k, v in res.items():
             #if 'Str_s' in k:
                 #print(k, v)
 
+def get_var_value(lineno, varname):
+    return 'varvalue'
 
+
+def get_binop_contants(node, args):
+    lhs = node.left
+    rhs = node.right
+    if isinstance(node.op, ast.Add):
+        if isinstance(rhs, ast.Constant):
+            args.insert(0, rhs.value)
+        elif isinstance(rhs, ast.Name):
+            value = get_var_value(node.lineno, rhs.id)
+            args.insert(0, value)
+        else:
+            args = None
+            return args
+        if isinstance(lhs, ast.Constant):
+            args.insert(0, lhs.value)
+        elif isinstance(lhs, ast.Name):
+            value = get_var_value(node.lineno, rhs.id)
+            args.insert(0, value)
+        elif isinstance(lhs, ast.BinOp):
+            get_binop_contants(lhs, args)
+        else:
+            args = None
+            return args
+    return args
 
 
 
@@ -68,5 +110,4 @@ class Foo():
     def test(self):
         from re import compile as cp, finditer as ft'''
 #mod = importlib.import_module(mod)
-p = ast.parse(mod)
-Imports().visit(p)
+test_json_ast()
