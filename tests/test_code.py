@@ -44,15 +44,51 @@ def test_code_assign(code, lineno, code_id, var_name, refers_to, value):
     assert ass.code_id == 7
 
 
-@pytest.mark.parametrize("index, var_name, value, refers_to", [
-    (0, 'a', 'first var', None),
-    (1, 'b', None, 'a'),
-    (2, 'c', None, None)
-])
-def test_visit_assign(code, index, var_name, value, refers_to):
+def test_visit_assign_binop():
+    ast_test = ast.parse("a = 'test_str_value2' + test_var_name + 'test_str_value0'")
+    code = Code()
     code.visit(ast_test)
-    assert code.assigns[index].var_name == var_name
-    assert code.assigns[index].value == value
-    assert code.assigns[index].refers_to == refers_to
+    ass = code.assigns[0]
+    assert ass.code_id == code.id
+    assert ass.var_name == 'a'
+    assert ass.value is None
+    assert ass.refers_to is None
+    assert ass.binop is not None
+    bin = ass.binop
+    assert bin.lineno == 1
+    assert bin.assign_id == ass.id
+    assert bin.arg_id == None
+    assert bin.value is None
+    for const in bin.constants:
+        assert const.binop_id == bin.id
+        if const.cls == 'Str':
+            assert const.value == 'test_str_value0' or const.value == 'test_str_value2'
+            assert const.position == 0 or const.position == 2
+            assert const.var_name is None
+        else:
+            assert const.cls == 'Var'
+            assert const.var_name == 'test_var_name'
+            assert const.position == 1
+            assert const.value is None
 
+def test_visit_assign_str():
+    ast_test = ast.parse("a = 'test_str_value2'")
+    code = Code()
+    code.visit(ast_test)
+    ass = code.assigns[0]
+    assert ass.var_name == 'a'
+    assert ass.value == 'test_str_value2'
+    assert ass.refers_to is None
+    assert ass.binop is None
+
+
+def test_visit_assign_var():
+    ast_test = ast.parse("b = test_var_name")
+    code = Code()
+    code.visit(ast_test)
+    ass = code.assigns[0]
+    assert ass.var_name == 'b'
+    assert ass.value is None
+    assert ass.refers_to == 'test_var_name'
+    assert ass.binop is None
 

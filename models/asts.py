@@ -121,37 +121,3 @@ class Argument(Base):
     value = Column(String)
     var_name = Column(String)
     binop = relationship("BinOp", uselist=False, back_populates="arg")
-
-    def get_binop_constants(self, node, args):
-        lhs = node.left
-        rhs = node.right
-        if isinstance(node.op, ast.Add):
-            if isinstance(rhs, ast.Constant):
-                args.insert(0, rhs.value)
-            elif isinstance(rhs, ast.Name):
-                # value = self.get_var_value(node.lineno, rhs.id)
-                value = None
-                if value is not None:
-                    args.insert(0, value)
-            else:
-                args = None
-                return args
-            if isinstance(lhs, ast.Constant):
-                args.insert(0, lhs.value)
-            elif isinstance(lhs, ast.Name):
-                # value = self.get_var_value(node.lineno, rhs.id)
-                value = None
-                if value is not None:
-                    args.insert(0, value)
-            elif isinstance(lhs, ast.BinOp):
-                self.get_binop_constants(lhs, args)
-            else:
-                args = None
-                return args
-        else:
-            args = None
-        return args
-
-    def get_var_value(self, lineno, var_name):
-        # TODO
-        return ''

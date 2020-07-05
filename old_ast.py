@@ -53,8 +53,8 @@ def test_json_ast(a='hello'):
     filename = 'old_ast.py'
     with open(file='old_ast.py', mode='r') as f:
         #filename = 'hello'
-        ast_python = get_ast.code_ast(f.read())
-        node = ast.parse(f.read())
+        ast_python = get_ast.code_ast("'test_str_value' + 'test_str_value'")
+        node = ast.parse("'test_str_value' + 'test_str_value'")
         b = binop()
         b.visit(node)
         node.lineno = 12
