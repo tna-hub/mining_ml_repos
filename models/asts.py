@@ -3,7 +3,7 @@ import ast
 from sqlalchemy.orm import relationship
 
 from models import Base
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, JSON
 
 
 class ImportFrom(Base):
@@ -32,37 +32,57 @@ class Assign(Base):
     var_name = Column(String)
     refers_to = Column(String)
     value = Column(String)
+    binop = relationship("BinOp", uselist=False, back_populates="assign")
 
 
-    def get_binop_constants(self, node, args):
+
+class BinOp(Base):
+    __tablename__ = 'binop'
+    id = Column(Integer, primary_key=True)
+    lineno = Column(Integer)
+    value = Column(String)
+    arg_id = Column(Integer, ForeignKey('arg.id'))
+    assign_id = Column(Integer, ForeignKey('assign.id'))
+    constants = relationship('Constant', backref='binop', lazy='dynamic')
+    arg = relationship('Argument', back_populates="binop")
+    assign = relationship('Assign', back_populates="binop")
+
+
+    def set_constants(self, node, position=-1):
         lhs = node.left
         rhs = node.right
         if isinstance(node.op, ast.Add):
             if isinstance(rhs, ast.Constant):
-                args.insert(0, rhs.value)
+                position += 1
+                const = Constant(cls='Str', value=rhs.value, position=position)
+                self.constants.append(const)
             elif isinstance(rhs, ast.Name):
                 # value = self.get_var_value(node.lineno, rhs.id)
-                value = None
-                if value is not None:
-                    args.insert(0, value)
-            else:
-                args = None
-                return args
+                position += 1
+                const = Constant(cls='Var', var_name=rhs.id, position=position)
+                self.constants.append(const)
             if isinstance(lhs, ast.Constant):
-                args.insert(0, lhs.value)
+                position += 1
+                const = Constant(cls='Str', value=lhs.value, position=position)
+                self.constants.append(const)
             elif isinstance(lhs, ast.Name):
                 # value = self.get_var_value(node.lineno, rhs.id)
-                value = None
-                if value is not None:
-                    args.insert(0, value)
+                position += 1
+                const = Constant(cls='Var', var_name=rhs.id, position=position)
+                self.constants.append(const)
             elif isinstance(lhs, ast.BinOp):
-                self.get_binop_constants(lhs, args)
-            else:
-                args = None
-                return args
-        else:
-            args = None
-        return args
+                self.set_constants(node=lhs, position=position)
+
+
+class Constant(Base):
+    __tablename__ = 'constant'
+    id = Column(Integer, primary_key=True)
+    binop_id = Column(Integer, ForeignKey('binop.id'))
+    var_name = Column(String)
+    cls = Column(String)
+    value = Column(String)
+    position = Column(Integer)
+
 
 class Call(Base):
     __tablename__ = 'call'
@@ -72,7 +92,6 @@ class Call(Base):
     arguments = relationship('Argument', backref='call', lazy='dynamic')
     attr = Column(String)
     name = Column(String)
-
 
 
 class ClassDef(Base):
@@ -101,6 +120,7 @@ class Argument(Base):
     position = Column(String)
     value = Column(String)
     var_name = Column(String)
+    binop = relationship("BinOp", uselist=False, back_populates="arg")
 
     def get_binop_constants(self, node, args):
         lhs = node.left
@@ -109,7 +129,7 @@ class Argument(Base):
             if isinstance(rhs, ast.Constant):
                 args.insert(0, rhs.value)
             elif isinstance(rhs, ast.Name):
-                #value = self.get_var_value(node.lineno, rhs.id)
+                # value = self.get_var_value(node.lineno, rhs.id)
                 value = None
                 if value is not None:
                     args.insert(0, value)
@@ -135,5 +155,3 @@ class Argument(Base):
     def get_var_value(self, lineno, var_name):
         # TODO
         return ''
-
-

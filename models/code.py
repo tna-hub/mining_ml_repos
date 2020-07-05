@@ -1,6 +1,6 @@
 from sqlalchemy.orm import relationship
 
-from models.asts import Import, ImportFrom, Call, Argument, Assign
+from models.asts import Import, ImportFrom, Call, Argument, Assign, BinOp
 from models.gits import Element
 from models import Base
 import ast
@@ -108,12 +108,10 @@ class Code(ast.NodeVisitor, Base):
                     self.assigns.append(ass)
                 elif isinstance(node.value, ast.BinOp):
                     if isinstance(node.value.op, ast.Add):
-                        binop = Assign(lineno=node.lineno, var_name=node.targets[0].id, value=None)
-                        ars = binop.get_binop_constants(node.value, [])
-                        if ars is not None:
-                            for ar in ars:
-                                binop.value += str(ar)
-                            self.assigns.append(binop)
+                        binop = BinOp(lineno=node.lineno)
+                        binop.set_constants(node.value)
+                        ass = Assign(lineno=node.lineno, var_name=node.targets[0].id, value=None, binop=binop)
+                        self.assigns.append(ass)
 
 
     def get_arg_var_value(self, arglineno, var_name):
