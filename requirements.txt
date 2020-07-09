@@ -1,7 +1,8 @@
-setuptools
-psycopg2
-SQLAlchemy
-PyDriller
-PyGithub
-pandas
-mlxtend
+setuptools~=47.3.1
+psycopg2~=2.8.5
+SQLAlchemy~=1.3.18
+PyDriller~=1.15.2
+PyGithub~=1.51
+pandas~=1.0.5
+mlxtend~=0.17.2
+pytest~=5.4.3
