@@ -19,7 +19,7 @@ def init_db(config_file='/home/ubuntu/PycharmProjects/mining_ml_repos/data/confi
                                                                       passwd,
                                                                       host,
                                                                       db),
-                           echo=echo)
+                           echo=True)
     return engine
 
 

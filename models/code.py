@@ -5,9 +5,10 @@ from sqlalchemy.orm import relationship
 
 from models import Base
 
-from models.asts import Call, Import, ImportFrom, ClassDef
+from models.asts import Call, Import, ImportFrom, ClassDef, Assign, AstObject
 
 nat_lib_names = ['numpy', 'pandas']
+
 
 class Code(Base, ast.NodeVisitor):
     __tablename__ = 'code'
@@ -29,7 +30,7 @@ class Code(Base, ast.NodeVisitor):
 
     def __init__(self, **kwargs):
         super(Code, self).__init__(**kwargs)
-        #self.set_mods()
+        # self.set_mods()
 
     @orm.reconstructor
     def set_mods(self):
@@ -40,11 +41,21 @@ class Code(Base, ast.NodeVisitor):
             uniq_imports['{}.{}'.format(imp.module, imp.name)] = imp.alias
         # First, to identify custom funcs, Remove all imports not matching a known (native or lib) function
         self.all_mods = [mod for mod in uniq_imports.keys()]
-        self.mods = {}
+        self.mods = []
         for mod in self.all_mods:
-            if mod.split('.')[0] in nat_lib_names:
-                self.mods.add(mod)
+            sp = mod.split('.')
+            if sp[0] in nat_lib_names:
+                self.mods.append(mod)
 
+    def visit_Assign(self, node):
+        if not isinstance(node.value, ast.Name):
+            obj = AstObject(node.value)
+            ass = Assign(lineno=node.lineno, target=node.targets[0].id if isinstance(node.targets[0], ast.Name) else None, ast_object=obj)
+            if ass.target is not None and ass.ast_object.cls is not None:
+                self.assigns.append(ass)
+
+
+'''
     def visit_Import(self, node):
         for imp in node.names:
             self.imports.append(Import(module=imp.name, alias=imp.asname))
@@ -52,7 +63,8 @@ class Code(Base, ast.NodeVisitor):
     def visit_ImportFrom(self, node):
         for imp in node.names:
             self.import_froms.append(ImportFrom(module=node.module, name=imp.name, alias=imp.asname, level=node.level))
-'''
+
+
     def visit_Call(self, node):
 
         self.calls.append(Call(node))

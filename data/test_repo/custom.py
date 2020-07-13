@@ -8,15 +8,22 @@ class CustomClassLoadFile1:
         with open(self.file, mode):
             pass
 
+    a = 'constant1'
+    c = a
+
     def custom_func_load_file_in_class(self):
-        a = lt(fname='../data/test_datafile.csv')
+        x = lt(fname='../data/test_datafile.csv')
 
 
 def custom_func_load_file(self):
-    a = lt(fname='../data/test_datafile.csv')
+    y = lt(fname='../data/test_datafile.csv')
 
 
 class CustomClassLoadFile2:
     def __init__(self, file, mode):
         self.file = file
         np.loadtxt(file, mode)
+
+
+b = 'constant1' + 'constant2' + 'constant3'
+c = b + 'fuck you'
