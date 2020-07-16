@@ -1,10 +1,18 @@
 import ast
+import re
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from models import Base
 from models.func_load_files import CustomFunc
+emoji_pattern = re.compile(
+    u"(\ud83d[\ude00-\ude4f])|"  # emoticons
+    u"(\ud83c[\udf00-\uffff])|"  # symbols & pictographs (1 of 2)
+    u"(\ud83d[\u0000-\uddff])|"  # symbols & pictographs (2 of 2)
+    u"(\ud83d[\ude80-\udeff])|"  # transport & map symbols
+    u"(\ud83c[\udde0-\uddff])"  # flags (iOS)
+    "+", flags=re.UNICODE)
 
 
 def classname(cls):
@@ -92,6 +100,7 @@ class AstObject(Base):
     arg = relationship('Argument', back_populates="ast_object")  # One to One relation with table Argument
     assign = relationship('Assign', back_populates="ast_object")  # One to One relation with table Assign
     value = Column(String)
+    cls = Column(String)
     var_name = Column(String)
 
     def __init__(self, node=None, **kwargs):
@@ -100,12 +109,15 @@ class AstObject(Base):
         if self.cls == 'Name':
             self.var_name = node.id
         elif self.cls == 'Constant':
-            self.value = str(node.value).replace('\x00', '')
+            try:
+                self.value = str(node.value).replace('\x00', '').encode("utf-8", errors="ignore").decode()
+            except Exception as e:
+                self.value = None
         elif self.cls == 'BinOp' and self.value is None:
             if isinstance(node.op, ast.Add):
                 constants = set_constants(node, constants=[])
                 val = self.set_binop_value(constants)
-                self.value = str(val).replace('\x00', '') if val is not None else None
+                self.value = str(val).replace('\x00', '').encode("utf-8", errors="ignore").decode() if val is not None else None
 
 
 

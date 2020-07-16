@@ -48,14 +48,14 @@ class Code(Base, ast.NodeVisitor):
                 self.mods.append(mod)
 
     def visit_Assign(self, node):
-        if not isinstance(node.value, ast.Name):
+        if isinstance(node.value, (ast.Constant, ast.BinOp)):
             obj = AstObject(node.value)
             ass = Assign(lineno=node.lineno, target=node.targets[0].id if isinstance(node.targets[0], ast.Name) else None, ast_object=obj)
-            if ass.target is not None and ass.ast_object.cls is not None:
+            if ass.target is not None and ass.ast_object.cls is not None and ass.ast_object.value is not None:
                 self.assigns.append(ass)
 
+"""
 
-'''
     def visit_Import(self, node):
         for imp in node.names:
             self.imports.append(Import(module=imp.name, alias=imp.asname))
@@ -76,4 +76,4 @@ class Code(Base, ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         pass
-'''
+"""

@@ -61,8 +61,8 @@ def extract_imports():
     i = 0
     for cod in session.query(Code).yield_per(100):
         t = (time.time() - start_time) / 60
-        if cod.content is None or cod.element is None or cod.json_ast is None:
-            session.delete(cod)
+        if cod.content is not None:
+            cod.visit(ast.parse(cod.content))
         if i % 100 == 0:
             session.flush()
             print(datetime.time(datetime.now()), 'Elapsed time: ', t, 'min, code for file:', cod.id, 'Done: ', i,
@@ -74,6 +74,4 @@ def extract_imports():
 
 
 #extract_imports()
-st = time.time()
-a = session.query(Code.id, Code.element).all()
-print(time.time() - st)
+

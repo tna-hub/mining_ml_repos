@@ -15,15 +15,15 @@ def init_db(config_file='/home/ubuntu/PycharmProjects/mining_ml_repos/data/confi
     user = config['postgresql']['user']
     passwd = config['postgresql']['passwd']
     db = config['postgresql']['db']
-    engine = create_engine('postgresql+psycopg2://{}:{}@{}/{}'.format(user,
-                                                                      passwd,
-                                                                      host,
-                                                                      db),
-                           echo=True)
+    engine = create_engine('postgresql+psycopg2://{}:{}@{}/{}?client_encoding=utf8'.format(user,
+                                                                                          passwd,
+                                                                                          host,
+                                                                                          db),
+                           echo=False)
     return engine
 
 
-Session = sessionmaker(bind=init_db())
+Session = sessionmaker(bind=init_db(), autoflush=False)
 
 
 @contextmanager
@@ -36,5 +36,5 @@ def session_scope():
     except:
         session.rollback()
         raise
-    #finally:
-        #session.close()
+    # finally:
+    # session.close()

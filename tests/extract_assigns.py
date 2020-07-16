@@ -1,9 +1,13 @@
 import ast
+import traceback
 from datetime import datetime
 import os
 import sys
 import time
 
+from sqlalchemy.orm import load_only
+
+from models.asts import emoji_pattern
 from models.code import Code
 from models.config import session_scope
 from models import gits, code, func_load_files, asts
@@ -50,31 +54,53 @@ def test_create():
                     #pass'''
 
 
-# test_create()
-
+#test_create()
 
 def extract_assigns():
     # q = session.query(Code)
     start_time = time.time()
+    q = session.query(Code).options(load_only("id", "content"))
     i = 0
-    for cod in session.query(Code).yield_per(100):
-        t = (time.time() - start_time) / 60
-        if cod.content is not None:
-            try:
-                cod.visit(ast.parse(cod.content))
-            except Exception:
-                pass
-            #for ass in cod.assigns:
-                #print(str(cod.id) + ':', ass.target, ass.lineno, ass.ast_object.cls, ass.ast_object.var_name, ass.ast_object.value)
+    for cod in q.yield_per(1000):#q.filter(Code.id > 630498, Code.id < 630501):.yield_per(10000):
+        try:
+            content = cod.content
+        except Exception:
+            session.rollback()
+            e = sys.exc_info()
+            print('Error when fetching', i)
+            print(traceback.format_exc())
+            exit()
+
+            #continue
+        try:
+            if cod is not None:
+                if content is not None:
+                    cod.visit(ast.parse(content))
+        except Exception as e:
+            e = sys.exc_info()
+            print('Error when visiting', i)
+            print(traceback.format_exc())
+            exit()
+            continue
+                #for ass in cod.assigns:
+                    #print(str(cod.id) + ':', ass.target, ass.lineno, ass.ast_object.cls, ass.ast_object.var_name, ass.ast_object.value)
         if i % 1000 == 0:
             try:
-                session.flush()
-                print(datetime.time(datetime.now()), 'Elapsed time: ', t, 'min, code info for file:', cod.id, 'Done: ', i, 'remaining: ', 2930690-i)
-            except Exception:
-                pass
+                if cod is not None:
+                    #cod.content = emoji_pattern.sub(r'', cod.content)
+                    session.flush()
+                    t = (time.time() - start_time) / 60
+                    print(datetime.time(datetime.now()), 'Elapsed time: ', t, 'min, code info for file:', cod.id, 'Done: ', i, 'remaining: ', 2930690-i)
+            except Exception as e:
+                session.rollback()
+                e = sys.exc_info()
+                print('Error when flushing', cod.id)
+                print(traceback.format_exc())
+                exit()
         i += 1
-    commit_time = datetime.time(datetime.now())
+    commit_time = time.time()
     print(commit_time, 'Committing...')
+    session.flush()
     session.commit()
     print(datetime.time(datetime.now()), 'End committing..., Elapsed time:', time.time() - commit_time)
 
