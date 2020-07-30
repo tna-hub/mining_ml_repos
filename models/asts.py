@@ -6,13 +6,7 @@ from sqlalchemy.orm import relationship
 
 from models import Base
 from models.func_load_files import CustomFunc
-emoji_pattern = re.compile(
-    u"(\ud83d[\ude00-\ude4f])|"  # emoticons
-    u"(\ud83c[\udf00-\uffff])|"  # symbols & pictographs (1 of 2)
-    u"(\ud83d[\u0000-\uddff])|"  # symbols & pictographs (2 of 2)
-    u"(\ud83d[\ude80-\udeff])|"  # transport & map symbols
-    u"(\ud83c[\udde0-\uddff])"  # flags (iOS)
-    "+", flags=re.UNICODE)
+
 
 
 def classname(cls):
@@ -26,9 +20,11 @@ class Call(Base):
     arguments = relationship('Argument', backref='call', lazy='dynamic')
     attr = Column(String)
     name = Column(String)
+    lineno = Column(Integer)
 
     def __init__(self, node=None, **kwargs):
         super(Call, self).__init__(**kwargs)
+        self.lineno = node.lineno
         if hasattr(node.func, 'attr'):
             self.name = node.func.attr
             if isinstance(node.func.value, ast.Name):
@@ -55,17 +51,6 @@ class Call(Base):
                                 if arg.value.id == 'self':
                                     arg = ast.Name(id=arg.attr, ctx='Load')
                         self.arguments.append(Argument(position=keyword.arg, ast_object=AstObject(arg)))
-
-
-class ImportFrom(Base):
-    __tablename__ = 'import_from'
-    id = Column(Integer, primary_key=True)
-    module = Column(String)
-    name = Column(String)
-    alias = Column(String)
-    level = Column(Integer)
-    code_id = Column(Integer, ForeignKey('code.id'))
-
 
 class Import(Base):
     __tablename__ = 'import'
@@ -117,9 +102,8 @@ class AstObject(Base):
             if isinstance(node.op, ast.Add):
                 constants = set_constants(node, constants=[])
                 val = self.set_binop_value(constants)
-                self.value = str(val).replace('\x00', '').encode("utf-8", errors="ignore").decode() if val is not None else None
-
-
+                self.value = str(val).replace('\x00', '').encode("utf-8",
+                                                                 errors="ignore").decode() if val is not None else None
 
     def set_binop_value(self, constants):
         if constants is not None:
@@ -147,24 +131,29 @@ def set_constants(node, constants):
             constants = None
     return constants
 
+
 class ClassDef(Base, ast.NodeVisitor):
     __tablename__ = 'class_def'
     id = Column(Integer, primary_key=True)
     code_id = Column(ForeignKey('code.id'))
     name = Column(String)
-    is_custom_func_load_files = Column(Boolean, default=False)
+    is_custom_func_load_files = False
 
-    def __init__(self, node=None, mods=None, **kwargs):
+    def __init__(self, node=None, **kwargs):
         super(ClassDef, self).__init__(**kwargs)
-        self.mods = mods
         self.name = node.name
         self.lineno = node.lineno
+        self.calls = []
+        self.params = []
+        if node is not None:
+            args = node.args.args
+            if len(args) > 0:
+                self.params = [arg.arg for arg in args]
+                self.params = [arg.arg for arg in args]
         self.visit(node)
-        self.calls = None
-        self.params = None
 
     def visit_FunctionDef(self, node):
-        fd = FunctionDef(node, self.mods)
+        fd = FunctionDef(node)
         if fd.name == '__init__':
             fd.visit(node)
             self.params = fd.params
@@ -196,6 +185,7 @@ class FunctionDef(ast.NodeVisitor):
         return False, None
 
     def visit_Call(self, node):
-        res, call = self.get_nat_or_lib_funcs(Call(node=node), self.mods)
-        if res:
+        # res, call = self.get_nat_or_lib_funcs(Call(node=node), self.mods)
+        call = Call(node=node)
+        if call.name == 'open':
             self.calls.append(call)

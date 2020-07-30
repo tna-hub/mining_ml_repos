@@ -2,6 +2,8 @@ from numpy import loadtxt as lt
 import numpy as np
 
 
+
+
 class CustomClassLoadFile1:
     def __init__(self, file, mode):
         self.file = file

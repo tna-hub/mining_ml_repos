@@ -1,4 +1,5 @@
 import ast
+import pprint
 from datetime import datetime
 import os
 import sys
@@ -6,7 +7,7 @@ import time
 
 import pytest
 
-from models.asts import Import, ImportFrom
+from models.asts import Import
 from models.query import windowed_query
 from models.code import Code
 from models.config import session_scope
@@ -36,11 +37,9 @@ def test_create():
     for el in repo.elements:
         if el.is_code_file:
             el.code.visit(ast.parse(el.code.content))
-            code = el.code
-            for imp in code.imports:
-                print(imp.module)
-            for imp in code.import_froms:
-                print(imp.module)
+            el.code.start()
+            pprint.pprint(el.code.s_funcs)
+
 
             ''' Now set a class as custom func or not.
             a) First look for the name of the function being called in the __init__ function of the class
@@ -49,12 +48,9 @@ def test_create():
                 -If not None, the function attr should be present in the alias or at the end of an element of mods
                 -If not present before, check the func name in native funcs
             '''
-            for cls_def in code.class_defs:
-                print(cls_def.name)
-                # for call in cls_def.calls:
 
 
-# test_create()
+test_create()
 def extract_imports():
     # q = session.query(Code)
     start_time = time.time()
@@ -64,12 +60,10 @@ def extract_imports():
         if cod.content is not None:
             cod.visit(ast.parse(cod.content))
         if i % 100 == 0:
-            session.flush()
             print(datetime.time(datetime.now()), 'Elapsed time: ', t, 'min, code for file:', cod.id, 'Done: ', i,
                   'remaining: ', 2930690 - i)
         i += 1
     print(datetime.time(datetime.now()), 'Committing...')
-    session.commit()
         # print(datetime.time(datetime.now()), 'End committing..., Elapsed time:', time.time() - commit_time)
 
 

@@ -104,4 +104,24 @@ def extract_assigns():
     session.commit()
     print(datetime.time(datetime.now()), 'End committing..., Elapsed time:', time.time() - commit_time)
 
-extract_assigns()
+#extract_assigns()
+def test_open():
+    q = session.query(Code).options(load_only("id", "content"))
+    for cod in q.yield_per(1000):
+        if cod.content is not None:
+            cod.visit(ast.parse(cod.content))
+
+#test_open()
+fs = 'open,load,loadtxt,save,savez,savez_compressed,savetxt,memmap,chararray.dump,chararray.tofile,recarray.dump,' \
+     'recarray.tofile,open,load,save,io.read_file,io.write_file,keras.models.save_model,keras.models.load_model,' \
+     'keras.utils.get_file,load_data,load,datasets.load_files,Image.open,Dataframe.to_csv,read_csv,read_excel,' \
+     'read_pickle,read_table,ExcelWriter,read_spss,read_fwf,model.save,imread,open,open_code,io.imread,io.imsave,File'
+f = fs.split(',')
+funcs = []
+final = ''
+for ff in f:
+    funcs.append(ff.split('.')[-1])
+for ff in funcs:
+    final += ff +','
+
+print(final)
