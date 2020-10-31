@@ -19,10 +19,7 @@ user = config['postgresql']['user']
 passwd = config['postgresql']['passwd']
 db = config['postgresql']['db']
 
-engine = create_engine('postgresql+psycopg2://{}:{}@{}/{}'.format(user,
-                                                                  passwd,
-                                                                  host,
-                                                                  db))
+engine = create_engine('postgresql+psycopg2://postgres:postgres@localhost/dataset')
 Base = automap_base()
 Base.prepare(engine, reflect=True)
 session = scoped_session(sessionmaker(bind=engine))
@@ -168,7 +165,8 @@ class Element(Base):
         try:
             f = open(self.name, 'r')
             code = f.read()
-            ast = get_ast.make_ast(code)
+
+            ast = get_ast.code_ast(code).json_ast
             imports = get_ast.get_modules(code)
             f.close()
         except Exception as e:

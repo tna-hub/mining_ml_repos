@@ -5,3 +5,4 @@ PyDriller
 PyGithub
 pandas
 mlxtend
+pytest
