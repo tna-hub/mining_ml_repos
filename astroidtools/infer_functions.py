@@ -46,6 +46,3 @@ def register_transformations():
         _looks_like_infer_join,
     )
 
-
-f = os.path.dirname(__file__)
-print("hellooo", __file__)
