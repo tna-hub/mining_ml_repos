@@ -1,8 +1,9 @@
-setuptools
-psycopg2
+setuptools~=50.3.2
+psycopg2~=2.8.6
 SQLAlchemy
-PyDriller
-PyGithub
-pandas
-mlxtend
+PyDriller~=1.15.2
+PyGithub~=1.53
+pandas~=1.1.4
+mlxtend~=0.17.3
 pytest
+astroid~=2.4.2
