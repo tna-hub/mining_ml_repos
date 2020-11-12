@@ -1,5 +1,5 @@
 
-from data_identifier.data_load import File
+from data_identifier.data_load import CodeFile
 from astroid import parse
 from astroidtools.infer_functions import f
 

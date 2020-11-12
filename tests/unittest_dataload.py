@@ -4,12 +4,12 @@ from pytest import raises
 from astroidtools import infer_functions as ifs
 from astroid import parse
 
-from data_identifier.data_load import File, ASTObject, DataLoadFunc, Arg
+from data_identifier.data_load import CodeFile, ASTObject, DataLoadFunc, Arg
 
 
 @pytest.fixture
 def file_from_source():
-    """Returns a File Object instance with source as content"""
+    """Returns a CodeFile Object instance with source as content"""
     source = '''
     f = "filename.2"
     c = os.path.join("root", "dir1")
@@ -19,13 +19,13 @@ def file_from_source():
         pass
     '''
     module = parse(source)
-    return File(astroid_node=module, name="filename1.py", filename="root/project1/filename1.py",
-                project_name="project1")
+    return CodeFile(astroid_node=module, name="filename1.py", filename="root/project1/filename1.py",
+                    project_name="project1")
 
 
 @pytest.mark.parametrize("object", [
     "ASTObject",
-    "File",
+    "CodeFile",
     "DataLoadFunc",
     "Arg"
 ])
@@ -37,7 +37,7 @@ def test_empty_astroid_node_object(object):
 
 
 def test_file_params(file_from_source):
-    # TODO: Add tests for File Object parameters
+    # TODO: Add tests for CodeFile Object parameters
     pass
 
 

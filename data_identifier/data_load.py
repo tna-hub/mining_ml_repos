@@ -13,7 +13,7 @@ class ASTObject:
             raise ValueError(f'The astroid node for Object {self.__class__.__name__} should not be empty')
 
 
-class File(ASTObject):
+class CodeFile(ASTObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
