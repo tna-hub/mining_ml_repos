@@ -68,3 +68,6 @@ def test_open_funcs_args(file_from_source, function, id, position, name, value, 
             assert obj.args[id].name == name
             assert obj.args[id].value == value
             assert obj.args[id].value_found == value_found
+
+
+

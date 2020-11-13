@@ -5,7 +5,6 @@ import os
 
 
 def _looks_like_infer_join(node, node_name="join"):
-    print("hellooo")
     if node.__class__.__name__ == "Call":
         name = ""
         if hasattr(node.func, "id"):

@@ -28,6 +28,7 @@ def get_data(link):
         print(traceback.format_exc())
     return lang, nb_commits
 
+
 with open("sota_arxiv_link_github.csv") as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=';')
     line_count = 0

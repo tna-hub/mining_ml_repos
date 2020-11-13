@@ -6,3 +6,4 @@ __pycache__/
 /archives/
 config.ini
 .pytest_cache/
+/tests/git_repos_test1/

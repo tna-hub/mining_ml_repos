@@ -26,34 +26,39 @@ class CodeFile(ASTObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def get_open_node(self, start_from=None, names=[]):
+    def get_open_node(self, names: dict = None, start_from=None):
         """
         Extract all the functions used to open a file
+
         :rtype: Iterator[:class:`DataLoadFunc`]
-        :param NodeNG start_from:
-        :param list names:
+        :param NodeNG start_from: Astroid node where to find the functions
+        :param list[string] names: List of functions used to open files
         """
-        if names.__class__.__name__ != "list":
-            raise TypeError("The parameter names must be a list")
-        if len(names) == 0:
+        if names is None:
+            names = {}
+        if names.__class__.__name__ != "dict":
+            raise TypeError("The parameter names must be a dictionary")
+        if not names:
             raise ValueError("should provide at least one function name in the parameter names")
         start_from = self.astroid_node if start_from is None else start_from
         name = None
+        full_name = None
         for node in start_from.nodes_of_class(nodes.Call):
             if hasattr(node.func, "attrname"):
                 name = node.func.attrname
+                full_name = node.func.expr.as_string()+'.'+name
             elif hasattr(node.func, "name"):
                 name = node.func.name
-            if name is not None and name in names:
-                d = DataLoadFunc(name=name, astroid_node=node, full_name=node.as_string().split('(')[0])
+                full_name = name
+            if name is not None and name in names.keys():
+                d = DataLoadFunc(name=name, astroid_node=node, full_name=full_name, io=names[name])
                 yield d
-
-    get_open_node()
 
 
 class DataLoadFunc(ASTObject):
-    def __init__(self, full_name=None, ags=None, *args, **kwargs):
+    def __init__(self, full_name=None, ags=None, io: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.io = io
         self.full_name = full_name
         self.args = ags if ags is not None else self.set_args()
 
