@@ -5,11 +5,11 @@ class ASTObject:
     def __init__(self, name=None, filename=None, lineno=None, project_name=None, astroid_node=None):
         """
 
-        @param name: The name of the object
-        @param filename:
-        @param lineno:
-        @param project_name:
-        @param astroid_node:
+        :param name: The name of the object
+        :param filename:
+        :param lineno:
+        :param project_name:
+        :param astroid_node:
         """
 
         self.name = name
@@ -32,7 +32,7 @@ class CodeFile(ASTObject):
 
         :rtype: Iterator[:class:`DataLoadFunc`]
         :param NodeNG start_from: Astroid node where to find the functions
-        :param list[string] names: List of functions used to open files
+        :param dict names: List of functions used to open files
         """
         if names is None:
             names = {}
@@ -46,12 +46,12 @@ class CodeFile(ASTObject):
         for node in start_from.nodes_of_class(nodes.Call):
             if hasattr(node.func, "attrname"):
                 name = node.func.attrname
-                full_name = node.func.expr.as_string()+'.'+name
+                full_name = node.func.expr.as_string() + '.' + name
             elif hasattr(node.func, "name"):
                 name = node.func.name
                 full_name = name
             if name is not None and name in names.keys():
-                d = DataLoadFunc(name=name, astroid_node=node, full_name=full_name, io=names[name])
+                d = DataLoadFunc(name=name, astroid_node=node, full_name=full_name, io=names[name], filename=self.filename)
                 yield d
 
 
@@ -88,10 +88,20 @@ class DataLoadFunc(ASTObject):
         if self.astroid_node.keywords is not None:
             res += self.get_keywords(last)
         return res
+    # TODO: Add function to retrieve the argument that is used to store (1) artifact name and (2) the mode
 
 
 class Arg(ASTObject):
-    def __init__(self, position=None, value=None, value_found=None, *args, **kwargs):
+    def __init__(self, position: int = None, value=None, value_found: bool = None, *args, **kwargs):
+        """
+        Argument of functions.
+
+        :param position:
+        :param value:
+        :param value_found:
+        :param args:
+        :param kwargs:
+        """
         super().__init__(*args, **kwargs)
         self.position = position
         self.value_found = value_found

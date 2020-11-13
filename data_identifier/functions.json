@@ -7,7 +7,7 @@
             "mparam_position": 2,
             "mparam_types": "String",
             "mvalues": "r:r",
-            "set_mode_from_name": "r"
+            "set_mode_from_name": null
         }
     },
     "cv2": {

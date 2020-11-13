@@ -1,4 +1,6 @@
 import json
+import os
+import csv
 
 from data_identifier.data_load import CodeFile
 from astroid import parse
@@ -23,21 +25,41 @@ def load_function_names(path: str = 'functions.json') -> object:
     return names
 
 
+def extract_to_csv(directory, file: str = '.extracted.csv'):
+    """
+    Writes the results of the data identification a csv file
+
+    :param str directory:
+    :param file:
+    :return:
+    """
+    with open(file, 'w') as f:
+        fnames = ['a_name', 'loaded_in', 'io', 'lineno']
+        writer = csv.DictWriter(f, fieldnames=fnames)
+        writer.writeheader()
+        for opn in extract(directory):
+            for arg in opn.args:
+                if arg.position == 0 and arg.value_found:
+                    to_write = {
+                        'a_name': arg.value,
+                        'loaded_in': str(opn.filename),
+                        'io': opn.io,
+                        'lineno': arg.lineno
+                    }
+                    writer.writerow(to_write)
+
+
 def extract(directory: str):
     p = Path(directory)
     names = load_function_names()
     for file in p.glob('**/*.py'):
         with open(file) as f:
             module = parse(f.read())
-            cf = CodeFile(astroid_node=module, name=file.name, filename=file.absolute().relative_to(Path.cwd()),
+            cf = CodeFile(astroid_node=module, name=file.name,
+                          filename=file.relative_to(directory),
                           project_name=directory)
             for opn in cf.get_open_node(names):
-                print(opn.full_name, end=': ')
-                for arg in opn.args:
-                    print(arg.value, end='')
-                    if arg.position == 0:
-                        print(':'+str(opn.io), end='; ')
-                print()
+                yield opn
 
 
 def main():
@@ -45,4 +67,4 @@ def main():
 
 
 if __name__ == "__main__":
-    extract('../tests/git_repos_test1')
+    extract_to_csv('../tests/git_repos_test1')
