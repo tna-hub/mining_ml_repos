@@ -1,0 +1,4 @@
+a_name,loaded_in,io,lineno
+auxiliary/colormap.npy,dataset/mesh_processor.py,r,13
+,training/trainer.py,r,151
+./dataset/data/metro_files/files-metro.txt,training/metro.py,,39

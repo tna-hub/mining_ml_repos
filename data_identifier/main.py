@@ -67,4 +67,11 @@ def main():
 
 
 if __name__ == "__main__":
-    extract_to_csv('../tests/git_repos_test1')
+    folder = "../tests/saner/"
+    listing = [n for n in os.listdir(os.path.abspath(folder)) if os.path.isdir(folder+n)]
+    for li in listing:
+        print("Extracting for", li)
+        try:
+            extract_to_csv(folder+li, li+'.csv')
+        except Exception:
+            print("      Error")

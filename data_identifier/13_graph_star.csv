@@ -1,0 +1,15 @@
+a_name,loaded_in,io,lineno
+./data/aclImdb/train/split_bert_large_encode_res.npy,run_imdb.py,r,28
+./data/aclImdb/train/split_y.npy,run_imdb.py,r,30
+./data/aclImdb/train/split_edge.npy,run_imdb.py,r,31
+./data/aclImdb/train/split_2k_bert_large_encode_res.npy,run_imdb.py,r,50
+./data/aclImdb/train/split_2k_y.npy,run_imdb.py,r,52
+./data/aclImdb/train/split_2k_edge.npy,run_imdb.py,r,53
+./data/aclImdb/train/split_bert_encode_res.npy,run_imdb.py,r,72
+./data/aclImdb/train/split_y.npy,run_imdb.py,r,73
+./data/aclImdb/train/split_edge.npy,run_imdb.py,r,74
+./data/aclImdb/train/all_bert_large_encode_res.npy,run_imdb.py,r,95
+./data/aclImdb/train/all_y.npy,run_imdb.py,r,96
+./data/aclImdb/train/all_edge.npy,run_imdb.py,r,97
+/mnt/nas1/NLP/public_dataset/TC/imdb/aclImdb/train,utils/imdb_data_util.py,r,133
+/mnt/nas1/NLP/public_dataset/TC/imdb/aclImdb/test,utils/imdb_data_util.py,r,134
