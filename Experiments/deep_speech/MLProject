@@ -1,0 +1,14 @@
+name: tensorflow
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      batch_size: {type: integer, default: 128}
+      train_epochs: {type: integer, default: 10}
+      rnn_hidden_size: {type: integer, default: 800}
+      rnn_hidden_layers: {type: integer, default: 5}
+      is_bidirectional: {type: bool, default: true}
+      use_bias: {type: bool, default: true}
+    command: "python train_diabetes.py {batch_size} {train_epochs} {rnn_hidden_size} {rnn_hidden_layers} {is_bidirectional} {use_bias}"

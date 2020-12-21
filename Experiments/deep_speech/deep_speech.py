@@ -17,7 +17,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import warnings
+import sys
 import os
+
 # pylint: disable=g-bad-import-order
 from absl import app as absl_app
 from absl import flags
@@ -35,13 +38,22 @@ from official.utils.misc import model_helpers
 # Default vocabulary file
 _VOCABULARY_FILE = os.path.join(
     os.path.dirname(__file__), "data/vocabulary.txt")
+# Log artifacts (output files) 
+data.to_csv('tensorflow.txt', encoding = 'utf-8', index=False)
+mlflow.log_artifact('tensorflow.txt')
+
 # Evaluation metrics
 _WER_KEY = "WER"
 _CER_KEY = "CER"
 
+# Log mlflow metrics for mlflow UI
+mlflow.log_param("WER", _WER_KEY)
+mlflow.log_param("CER", _CER_KEY)
+
 
 def compute_length_after_conv(max_time_steps, ctc_time_steps, input_length):
   """Computes the time_steps/ctc_input_length after convolution.
+
   Suppose that the original feature contains two parts:
   1) Real spectrogram signals, spanning input_length steps.
   2) Padded part with all 0s.
@@ -52,10 +64,12 @@ def compute_length_after_conv(max_time_steps, ctc_time_steps, input_length):
   for the signal after conv as follows (using ctc_input_length to denote):
   ctc_input_length = (input_length / max_time_steps) * output_length_of_conv.
   This length is then fed into ctc loss function to compute loss.
+
   Args:
     max_time_steps: max_time_steps for the batch, after padding.
     ctc_time_steps: number of timesteps after convolution.
     input_length: actual length of the original spectrogram, without padding.
+
   Returns:
     the ctc_input_length after convolution layer.
   """
@@ -67,14 +81,17 @@ def compute_length_after_conv(max_time_steps, ctc_time_steps, input_length):
 
 def evaluate_model(estimator, speech_labels, entries, input_fn_eval):
   """Evaluate the model performance using WER anc CER as metrics.
+
   WER: Word Error Rate
   CER: Character Error Rate
+
   Args:
     estimator: estimator to evaluate.
     speech_labels: a string specifying all the character in the vocabulary.
     entries: a list of data entries (audio_file, file_size, transcript) for the
       given dataset.
     input_fn_eval: data input function for evaluation.
+
   Returns:
     Evaluation result containing 'wer' and 'cer' as two metrics.
   """
@@ -115,6 +132,7 @@ def evaluate_model(estimator, speech_labels, entries, input_fn_eval):
 
 def model_fn(features, labels, mode, params):
   """Define model function for deep speech model.
+
   Args:
     features: a dictionary of input_data features. It includes the data
       input_length, label_length and the spectrogram features.
@@ -122,6 +140,7 @@ def model_fn(features, labels, mode, params):
     mode: current estimator mode; should be one of
       `tf.estimator.ModeKeys.TRAIN`, `EVALUATE`, `PREDICT`.
     params: a dict of hyper parameters to be passed to model_fn.
+
   Returns:
     EstimatorSpec parameterized according to the input params and the
     current mode.
@@ -137,6 +156,9 @@ def model_fn(features, labels, mode, params):
       flags_obj.is_bidirectional, flags_obj.rnn_hidden_size,
       num_classes, flags_obj.use_bias)
 
+  # Log mlflow model for mlflow UI
+  mlflow.sklearn.log_model(model, "model")
+    
   if mode == tf.estimator.ModeKeys.PREDICT:
     logits = model(features, training=False)
     predictions = {
@@ -168,7 +190,7 @@ def model_fn(features, labels, mode, params):
       loss=loss,
       train_op=train_op)
 
-
+    
 def generate_dataset(data_dir):
   """Generate a speech dataset."""
   audio_conf = dataset.AudioConfig(sample_rate=flags_obj.sample_rate,
@@ -186,14 +208,19 @@ def generate_dataset(data_dir):
 
 def per_device_batch_size(batch_size, num_gpus):
   """For multi-gpu, batch-size must be a multiple of the number of GPUs.
+
+
   Note that distribution strategy handles this automatically when used with
   Keras. For using with Estimator, we need to get per GPU batch.
+
   Args:
     batch_size: Global batch size to be divided among devices. This should be
       equal to num_gpus times the single-GPU batch_size for multi-gpu training.
     num_gpus: How many GPUs are used with DistributionStrategies.
+
   Returns:
     Batch size per device.
+
   Raises:
     ValueError: if batch_size is not divisible by number of devices
   """
@@ -245,7 +272,14 @@ def run_deep_speech(_):
       "is_bidirectional": flags_obj.is_bidirectional,
       "use_bias": flags_obj.use_bias
   }
-
+ # Log mlflow params for mlflow UI
+  mlflow.log_param("batch_size", flags_obj.batch_size)
+  mlflow.log_param("train_epochs", flags_obj.train_epochs)
+  mlflow.log_param("rnn_hidden_size", flags_obj.rnn_hidden_size)
+  mlflow.log_param("rnn_hidden_layers", flags_obj.rnn_hidden_layers)
+  mlflow.log_param("is_bidirectional", flags_obj.is_bidirectional)
+  mlflow.log_param("use_bias", flags_obj.use_bias)
+    
   per_replica_batch_size = per_device_batch_size(flags_obj.batch_size, num_gpus)
 
   def input_fn_train():
@@ -401,3 +435,5 @@ if __name__ == "__main__":
   define_deep_speech_flags()
   flags_obj = flags.FLAGS
   absl_app.run(main)
+  
+
