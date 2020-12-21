@@ -11,7 +11,8 @@ import torch.utils.data
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
-
+# Import mlflow
+import mlflow
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=True, help='cifar10 | lsun | mnist |imagenet | folder | lfw | fake')
@@ -161,6 +162,9 @@ if opt.netG != '':
     netG.load_state_dict(torch.load(opt.netG))
 print(netG)
 
+# Log mlflow params for mlflow UI
+mlflow.log_param("netD", netD)
+mlflow.log_param("netG", netG)
 
 class Discriminator(nn.Module):
     def __init__(self, ngpu):
@@ -271,3 +275,7 @@ for epoch in range(opt.niter):
     # do checkpointing
     torch.save(netG.state_dict(), '%s/netG_epoch_%d.pth' % (opt.outf, epoch))
     torch.save(netD.state_dict(), '%s/netD_epoch_%d.pth' % (opt.outf, epoch))
+    
+ # Log artifacts (output files)
+data.to_csv('pytorch.txt', encoding = 'utf-8', index=False)
+mlflow.log_artifact('pytorch.txt')

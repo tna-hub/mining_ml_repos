@@ -1,0 +1,11 @@
+name: pytorch
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      netD: {type: float?, default: 0.01}
+      netG: {type: float?, default: 0.5}
+	  
+    command: "main.py {netD} {netG} "

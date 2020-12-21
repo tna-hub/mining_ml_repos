@@ -1,0 +1,12 @@
+name: pytorch
+channels:
+  - defaults
+  - anaconda
+  - conda-forge
+dependencies:
+  - torch
+  - torchvision
+  - lmdb
+  - pip
+  - pip:
+    - mlflow
