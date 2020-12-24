@@ -1,0 +1,1 @@
+command = "echo " + link + "| perl -ne 'print $1 if m!([^/]+/[^/]+?)(?:\.git)?$!' | xargs -I{} curl -s -H " + "Authorization: token d7b31a613397dc6ce1eb3cd12eec34553f52509f" + " -k https://api.github.com/repos/'{}' | grep size"

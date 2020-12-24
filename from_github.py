@@ -1,3 +1,4 @@
+import csv
 import time
 from github import GithubException
 from github import Github, Commit
@@ -48,3 +49,33 @@ def get_commit(rep_name, sha) -> Commit:
     except Exception as e:
         print(traceback.format_exc())
         return None
+
+def get_size(link):
+    g = Github(token)
+    try:
+        repo = g.get_repo(link)
+        return repo.size
+    except GithubException as error:
+        if error.data["message"].startswith("API rate limit exceeded"):
+            print("Request limit reached at line, Wait 500 seconds")
+            time.sleep(500)
+            return get_size(link)
+        else:
+            print('Exception from github', error.status, error.data)
+            return None
+    except Exception as e:
+        print(traceback.format_exc())
+        return None
+
+with open("./data/datasetv2.csv") as f:
+    reader = csv.reader(f)
+    next(reader)  # Skip the header row.
+    for row in reader:
+        print("Getting row", row[0])
+        link = row[1].replace("https://github.com/", "")
+        size = get_size(link)
+        if size is not None:
+            with open("./data/repo_size.csv", "a+") as f:
+                writer = csv.writer(f)
+                row.append(size)
+                writer.writerow(row)
