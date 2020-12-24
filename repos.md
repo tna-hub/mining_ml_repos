@@ -1,4 +1,5 @@
 tensorflow: https://github.com/tensorflow/models/tree/master/research/deep_speech 
+
 pytorch https://github.com/pytorch/examples/tree/master/dcgan
 
 Used quartile methods and the filtered Paper With Code dataset:
