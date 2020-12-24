@@ -1,12 +1,14 @@
 name: pytorch
 channels:
   - defaults
+  - pytorch
   - anaconda
   - conda-forge
 dependencies:
-  - torch
-  - torchvision
-  - lmdb
+  - python=3.6
   - pip
   - pip:
-    - mlflow
+    - torch==1.6.0
+    - torchvision==0.7.0
+    - mlflow>=1.0
+    - tensorboardX

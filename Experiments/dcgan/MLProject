@@ -5,7 +5,24 @@ conda_env: conda.yaml
 entry_points:
   main:
     parameters:
-      netD: {type: float?, default: 0.01}
-      netG: {type: float?, default: 0.5}
-	  
+      dataset: {type: string, default: 'True'}
+      dataroot: {type: string, default: 'False'}
+      workers: {type: int, default: 2}
+      batchSize: {type: int, default: 64}
+      imageSize: {type: int, default: 64}
+      nz: {type: int, default: 100}
+      ngf: {type: int, default: 64}
+      ndf: {type: int, default: 64}
+      niter: {type: int, default: 25}
+      lr: {type: float, default: 0.0002}
+      beta1: {type: float, default: 0.5}
+      cuda: {type: string, default: 'store_true'}
+      dry-run: {type: string, default: 'store_true'}
+      ngpu: {type: int, default: 1}
+      netG: {type: string, default: ''}
+      netD: {type: string, default: ''}
+      outf: {type: string, default: '.'}
+      manualSeed: {type: int, default: 0}
+      classes: {type: string, default: bedroom}
+      
     command: "main.py {netD} {netG} "

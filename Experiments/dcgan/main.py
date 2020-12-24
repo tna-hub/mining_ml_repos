@@ -6,14 +6,16 @@ import torch
 import torch.nn as nn
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
-import torch.optim as optim
-import torch.utils.data
-import torchvision.datasets as dset
-import torchvision.transforms as transforms
 import torchvision.utils as vutils
+import torch.optim as optim
+from torchvision import datasets, transforms
+
+
 # Import mlflow
 import mlflow
+import mlflow.pytorch
 
+# Command-line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=True, help='cifar10 | lsun | mnist |imagenet | folder | lfw | fake')
 parser.add_argument('--dataroot', required=False, help='path to dataset')
@@ -59,7 +61,7 @@ if opt.dataroot is None and str(opt.dataset).lower() != 'fake':
 
 if opt.dataset in ['imagenet', 'folder', 'lfw']:
     # folder dataset
-    dataset = dset.ImageFolder(root=opt.dataroot,
+    dataset = datasets.ImageFolder(root=opt.dataroot,
                                transform=transforms.Compose([
                                    transforms.Resize(opt.imageSize),
                                    transforms.CenterCrop(opt.imageSize),
@@ -69,7 +71,7 @@ if opt.dataset in ['imagenet', 'folder', 'lfw']:
     nc=3
 elif opt.dataset == 'lsun':
     classes = [ c + '_train' for c in opt.classes.split(',')]
-    dataset = dset.LSUN(root=opt.dataroot, classes=classes,
+    dataset = datasets.LSUN(root=opt.dataroot, classes=classes,
                         transform=transforms.Compose([
                             transforms.Resize(opt.imageSize),
                             transforms.CenterCrop(opt.imageSize),
@@ -78,7 +80,7 @@ elif opt.dataset == 'lsun':
                         ]))
     nc=3
 elif opt.dataset == 'cifar10':
-    dataset = dset.CIFAR10(root=opt.dataroot, download=True,
+    dataset = datasets.CIFAR10(root=opt.dataroot, download=True,
                            transform=transforms.Compose([
                                transforms.Resize(opt.imageSize),
                                transforms.ToTensor(),
@@ -87,7 +89,7 @@ elif opt.dataset == 'cifar10':
     nc=3
 
 elif opt.dataset == 'mnist':
-        dataset = dset.MNIST(root=opt.dataroot, download=True,
+        dataset = datasets.MNIST(root=opt.dataroot, download=True,
                            transform=transforms.Compose([
                                transforms.Resize(opt.imageSize),
                                transforms.ToTensor(),
@@ -96,7 +98,7 @@ elif opt.dataset == 'mnist':
         nc=1
 
 elif opt.dataset == 'fake':
-    dataset = dset.FakeData(image_size=(3, opt.imageSize, opt.imageSize),
+    dataset = datasets.FakeData(image_size=(3, opt.imageSize, opt.imageSize),
                             transform=transforms.ToTensor())
     nc=3
 
@@ -162,10 +164,6 @@ if opt.netG != '':
     netG.load_state_dict(torch.load(opt.netG))
 print(netG)
 
-# Log mlflow params for mlflow UI
-mlflow.log_param("netD", netD)
-mlflow.log_param("netG", netG)
-
 class Discriminator(nn.Module):
     def __init__(self, ngpu):
         super(Discriminator, self).__init__()
@@ -212,6 +210,10 @@ fixed_noise = torch.randn(opt.batchSize, nz, 1, 1, device=device)
 real_label = 1
 fake_label = 0
 
+with mlflow.start_run():
+        # Log our parameters into mlflow
+    for key, value in vars(opt).items():
+        mlflow.log_param(key, value)
 # setup optimizer
 optimizerD = optim.Adam(netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
