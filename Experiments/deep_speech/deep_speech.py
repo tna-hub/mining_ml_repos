@@ -20,14 +20,10 @@ from __future__ import print_function
 import warnings
 import sys
 import os
-
-# pylint: disable=g-bad-import-order
 from absl import app as absl_app
 from absl import flags
 from absl import logging
 import tensorflow as tf
-# pylint: enable=g-bad-import-order
-
 import data.dataset as dataset
 import decoder
 import deep_speech_model

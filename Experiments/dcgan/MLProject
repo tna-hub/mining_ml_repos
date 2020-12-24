@@ -24,5 +24,23 @@ entry_points:
       outf: {type: string, default: '.'}
       manualSeed: {type: int, default: 0}
       classes: {type: string, default: bedroom}
-      
-    command: "main.py {netD} {netG} "
+    command: |
+          python3 main.py \
+            --dataset {dataset} \
+            --dataroot {dataroot} \
+            --workers {workers} \
+            --batchSize {batchSize} \ 
+            --imageSize {imageSize} \
+            --nz {nz} \
+            --ndf {ndf} \
+            --niter {niter} \ 
+            --lr {lr} \
+            --beta1 {beta1} \
+            --cuda {cuda} \
+            --dry-run {dry-run} \
+            --ngpu {ngpu} \
+            --netG {netG} \
+            --netD {netD} \
+            --outf {outf} \
+            --manualSeed {manualSeed} \
+            --classes {classes}
