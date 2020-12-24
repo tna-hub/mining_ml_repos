@@ -21,12 +21,12 @@ Large projects: size between Q3 and maximum
   
 Medium projects: size between median and Q3
   1) https://github.com/bearpaw/pytorch-pose, size: 7 Mb
-  2) https://github.com/JunweiLiang/Object_Detection_Tracking, size: 8.4 Mb
-  3) https://github.com/brightmart/text_classification, size: 14.7Mb
+  2) https://github.com/JunweiLiang/Object_Detection_Tracking, Fork: https://github.com/tna-hub/Object_Detection_Tracking, size: 8.4 Mb
+  3) https://github.com/brightmart/text_classification, Fork: https://github.com/tna-hub/text_classification, size: 14.7Mb
   
 Small projects: size between Q1 and median
-  1) https://github.com/YoungXiyuan/DCA, size: 1.5 Mb
-  2) https://github.com/crowdbotp/socialways, size: 5.0 Mb
+  1) https://github.com/YoungXiyuan/DCA, Fork: https://github.com/tna-hub/DCA, size: 1.5 Mb
+  2) https://github.com/crowdbotp/socialways, Fork: https://github.com/tna-hub/socialways, size: 5.0 Mb
 
 Very small projects: size < Q1
   - Will be ignored because too small and not relevant
