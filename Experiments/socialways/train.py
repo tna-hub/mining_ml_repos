@@ -14,6 +14,8 @@ from utils.parse_utils import Scale
 from torch.utils.data import DataLoader
 from utils.linear_models import predict_cv
 
+# Import mlflow
+import mlflow
 
 # Parser arguments
 parser = argparse.ArgumentParser(description='Social Ways trajectory prediction.')
@@ -55,6 +57,8 @@ dataset_name = args.dataset
 model_name = args.model
 input_file = '../hotel-8-12.npz'
 model_file = '../trained_models/' + model_name + '-' + dataset_name + '.pt'
+# Log artifacts (output files)
+mlflow.log_artifact("../hotel-8-12.npz")
 
 # FIXME: ====== training hyper-parameters ======
 # Unrolled GAN
@@ -555,6 +559,8 @@ def train():
 
     train_ADE /= n_train_samples
     train_FDE /= n_train_samples
+    # log metrics
+    mlflow.log_metrics({"train_ADE": train_ADE, "train_FDE": train_FDE})
     toc = time.clock()
     print(" Epc=%4d, Train ADE,FDE = (%.3f, %.3f) | time = %.1f" \
           % (epoch, train_ADE, train_FDE, toc - tic))
@@ -641,6 +647,20 @@ else:
 # os.makedirs(wr_dir, exist_ok=True)
 # test(n_gen_samples=128, write_to_file=wr_dir)
 # exit(1)
+
+with mlflow.start_run():
+    # train model
+        params = {
+            "batch-size": 256,
+            "epochs": 1000,
+            "model": 'socialWays',
+            "latent-dim": 10,
+            "d-learning-rate": 1E-3,
+            "g-learning-rate": 1E-4,            
+            "unrolling-steps": 1,
+            "hidden-size": 64,
+        }
+        model = plt.train()
 
 # ===================== TRAIN =========================
 for epoch in trange(start_epoch, n_epochs + 1):  # FIXME : set the number of epochs
