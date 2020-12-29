@@ -1,0 +1,5 @@
+Step,code-files,functions,input_files,output_files
+"Data preprocessing","create_data.py",*,"datasets/obsmat.txt","datasets/hotel-8-12.npz"
+Training,train.py,"train.py:train()","datasets/hotel-8-12.npz","trained_models/?"
+Testing,train.py,"train.py:test()","datasets/hotel-8-12.npz",medium/
+validation,?,?,?,?

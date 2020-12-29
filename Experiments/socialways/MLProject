@@ -14,12 +14,14 @@ entry_points:
       unrolling-steps: {type: int, default: 1}
       hidden-size: {type: int, default: 64}
     command: |
+          python3 create_dataset.py
           python3 train.py \
             --batch-size {batch-size} \
             --epochs {epochs} \
             --model {model} \
-            --latent-dim {latent-dim} \ 
+            --latent-dim {latent-dim} \
             --d-learning-rate {d-learning-rate} \
             --g-learning-rate {g-learning-rate} \
             --unrolling-steps {unrolling-steps} \
-            --hidden-size {hidden-size} 
+            --hidden-size {hidden-size}
+

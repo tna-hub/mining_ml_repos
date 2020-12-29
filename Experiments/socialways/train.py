@@ -1,4 +1,5 @@
 import os
+import mlflow
 import time
 import argparse
 import matplotlib.pyplot as plt
@@ -14,8 +15,6 @@ from utils.parse_utils import Scale
 from torch.utils.data import DataLoader
 from utils.linear_models import predict_cv
 
-# Import mlflow
-import mlflow
 
 # Parser arguments
 parser = argparse.ArgumentParser(description='Social Ways trajectory prediction.')
@@ -55,11 +54,10 @@ args = parser.parse_args()
 # ========== set input/output files ============
 dataset_name = args.dataset
 model_name = args.model
-input_file = '../hotel-8-12.npz'
-model_file = '../trained_models/' + model_name + '-' + dataset_name + '.pt'
+input_file = 'datasets/hotel-8-12.npz'
+model_file = 'trained_models/' + model_name + '-' + dataset_name + '.pt'
 # Log artifacts (output files)
-mlflow.log_artifact("../hotel-8-12.npz")
-
+mlflow.log_artifact("datasets/hotel-8-12.npz")
 # FIXME: ====== training hyper-parameters ======
 # Unrolled GAN
 n_unrolling_steps = args.unrolling_steps
@@ -124,8 +122,8 @@ dataset_obsv = scale.normalize(dataset_obsv)
 dataset_pred = scale.normalize(dataset_pred)
 ss = scale.sx
 # Copy normalized observations/paths to predict into torch GPU tensors
-dataset_obsv = torch.FloatTensor(dataset_obsv).cuda()
-dataset_pred = torch.FloatTensor(dataset_pred).cuda()
+dataset_obsv = torch.FloatTensor(dataset_obsv)
+dataset_pred = torch.FloatTensor(dataset_pred)
 
 
 # ================================================
@@ -297,8 +295,8 @@ class Discriminator(nn.Module):
 
     def forward(self, obsv, pred):
         bs = obsv.size(0)
-        lstm_h_c = (torch.zeros(1, bs, self.lstm_dim).cuda(),
-                    torch.zeros(1, bs, self.lstm_dim).cuda())
+        lstm_h_c = (torch.zeros(1, bs, self.lstm_dim),
+                    torch.zeros(1, bs, self.lstm_dim))
         # Encoding of the observed sequence trhough an LSTM cell
         obsv_code, lstm_h_c = self.obsv_encoder_lstm(obsv, lstm_h_c)
         # Further encoding through a FC layer
@@ -371,13 +369,13 @@ class DecoderLstm(nn.Module):
 
 
 # LSTM-based path encoder
-encoder = EncoderLstm(hidden_size, n_lstm_layers).cuda()
-feature_embedder = EmbedSocialFeatures(num_social_features, social_feature_size).cuda()
-attention = AttentionPooling(hidden_size, social_feature_size).cuda()
+encoder = EncoderLstm(hidden_size, n_lstm_layers)
+feature_embedder = EmbedSocialFeatures(num_social_features, social_feature_size)
+attention = AttentionPooling(hidden_size, social_feature_size)
 
 # Decoder
-decoder = DecoderFC(hidden_size + social_feature_size + noise_len).cuda()
-# decoder = DecoderLstm(social_feature_size + VEL_VEC_LEN + noise_len, traj_code_len).cuda()
+decoder = DecoderFC(hidden_size + social_feature_size + noise_len)
+# decoder = DecoderLstm(social_feature_size + VEL_VEC_LEN + noise_len, traj_code_len)
 
 # The Generator parameters and their optimizer
 predictor_params = chain(attention.parameters(), feature_embedder.parameters(),
@@ -385,7 +383,7 @@ predictor_params = chain(attention.parameters(), feature_embedder.parameters(),
 predictor_optimizer = opt.Adam(predictor_params, lr=lr_g, betas=(0.9, 0.999))
 
 # The Discriminator parameters and their optimizer
-D = Discriminator(n_next, hidden_size, n_latent_codes).cuda()
+D = Discriminator(n_next, hidden_size, n_latent_codes)
 D_optimizer = opt.Adam(D.parameters(), lr=lr_d, betas=(0.9, 0.999))
 mse_loss = nn.MSELoss()
 bce_loss = nn.BCELoss()
@@ -400,8 +398,8 @@ def predict(obsv_p, noise, n_next, sub_batches=[]):
     # This makes of obsv_4d a batch_sizexTx4 tensor
     obsv_4d = get_traj_4d(obsv_p, [])
     # Initial values for the hidden and cell states (zero)
-    lstm_h_c = (torch.zeros(n_lstm_layers, bs, encoder.hidden_size).cuda(),
-                torch.zeros(n_lstm_layers, bs, encoder.hidden_size).cuda())
+    lstm_h_c = (torch.zeros(n_lstm_layers, bs, encoder.hidden_size),
+                torch.zeros(n_lstm_layers, bs, encoder.hidden_size))
     encoder.init_lstm(lstm_h_c[0], lstm_h_c[1])
     # Apply the encoder to the observed sequence
     # obsv_4d: batch_sizexTx4 tensor
@@ -441,7 +439,7 @@ def predict(obsv_p, noise, n_next, sub_batches=[]):
 
 # =============== Training Loop ==================
 def train():
-    tic = time.clock()
+    tic = time.process_time()
     # Evaluation metrics (ADE/FDE)
     train_ADE, train_FDE = 0, 0
     batch_size_accum = 0;
@@ -465,16 +463,16 @@ def train():
             sub_batches = sub_batches - sub_batches[0][0]
             # May have to fill with 0
             filling_len = batch_size - int(batch_size_accum)
-            #obsv = torch.cat((obsv, torch.zeros(filling_len, n_past, 2).cuda()), dim=0)
-            #pred = torch.cat((pred, torch.zeros(filling_len, n_next, 2).cuda()), dim=0)
+            #obsv = torch.cat((obsv, torch.zeros(filling_len, n_past, 2)), dim=0)
+            #pred = torch.cat((pred, torch.zeros(filling_len, n_next, 2)), dim=0)
 
             bs = batch_size_accum
 
             # Completes the positional vectors with velocities (to have dimension 4)
             obsv_4d, pred_4d = get_traj_4d(obsv, pred)
-            zeros = Variable(torch.zeros(bs, 1) + np.random.uniform(0, 0.1), requires_grad=False).cuda()
-            ones = Variable(torch.ones(bs, 1) * np.random.uniform(0.9, 1.0), requires_grad=False).cuda()
-            noise = torch.FloatTensor(torch.rand(bs, noise_len)).cuda()
+            zeros = Variable(torch.zeros(bs, 1) + np.random.uniform(0, 0.1), requires_grad=False)
+            ones = Variable(torch.ones(bs, 1) * np.random.uniform(0.9, 1.0), requires_grad=False)
+            noise = torch.FloatTensor(torch.rand(bs, noise_len))
 
             # ============== Train Discriminator ================
             for u in range(n_unrolling_steps + 1):
@@ -559,9 +557,8 @@ def train():
 
     train_ADE /= n_train_samples
     train_FDE /= n_train_samples
-    # log metrics
     mlflow.log_metrics({"train_ADE": train_ADE, "train_FDE": train_FDE})
-    toc = time.clock()
+    toc = time.process_time()
     print(" Epc=%4d, Train ADE,FDE = (%.3f, %.3f) | time = %.1f" \
           % (epoch, train_ADE, train_FDE, toc - tic))
 
@@ -587,7 +584,7 @@ def test(n_gen_samples=20, linear=False, write_to_file=None, just_one=False):
                 all_20_errors.append(err_all.unsqueeze(0))
             else:
                 for kk in range(n_gen_samples):
-                    noise = torch.FloatTensor(torch.rand(bs, noise_len)).cuda()
+                    noise = torch.FloatTensor(torch.rand(bs, noise_len))
                     pred_hat_4d = predict(obsv, noise, n_next)
                     all_20_preds.append(pred_hat_4d.unsqueeze(0))
                     err_all = torch.pow((pred_hat_4d[:, :, :2] - pred) / ss, 2).sum(dim=2, keepdim=True).sqrt()
@@ -648,20 +645,6 @@ else:
 # test(n_gen_samples=128, write_to_file=wr_dir)
 # exit(1)
 
-with mlflow.start_run():
-    # train model
-        params = {
-            "batch-size": 256,
-            "epochs": 1000,
-            "model": 'socialWays',
-            "latent-dim": 10,
-            "d-learning-rate": 1E-3,
-            "g-learning-rate": 1E-4,            
-            "unrolling-steps": 1,
-            "hidden-size": 64,
-        }
-        model = plt.train()
-
 # ===================== TRAIN =========================
 for epoch in trange(start_epoch, n_epochs + 1):  # FIXME : set the number of epochs
     # Main training function
@@ -683,6 +666,6 @@ for epoch in trange(start_epoch, n_epochs + 1):  # FIXME : set the number of epo
         }, model_file)
 
     if epoch % 5 == 0:
-        wr_dir = '../medium/' + dataset_name + '/' + model_name + '/' + str(epoch)
+        wr_dir = 'medium/' + dataset_name + '/' + model_name + '/' + str(epoch)
         os.makedirs(wr_dir, exist_ok=True)
         test(128, write_to_file=wr_dir, just_one=True)
