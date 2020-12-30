@@ -1,0 +1,27 @@
+name: socialways
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      batch-size: {type: int, default: 64}
+      epochs: {type: int, default: 64}
+      model: {type: string, default: 'socialWays'}
+      latent-dim: {type: int, default: 10}
+      d-learning-rate: {type: float, default: 1E-3}
+      g-learning-rate: {type: float, default: 1E-4}
+      unrolling-steps: {type: int, default: 1}
+      hidden-size: {type: int, default: 64}
+    command: |
+          python3 create_dataset.py
+          python3 train.py \
+            --batch-size {batch-size} \
+            --epochs {epochs} \
+            --model {model} \
+            --latent-dim {latent-dim} \
+            --d-learning-rate {d-learning-rate} \
+            --g-learning-rate {g-learning-rate} \
+            --unrolling-steps {unrolling-steps} \
+            --hidden-size {hidden-size}
+
