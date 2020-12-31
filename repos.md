@@ -22,7 +22,7 @@ Large projects: size between Q3 and maximum
   
 Medium projects: size between median and Q3
   1) https://github.com/bearpaw/pytorch-pose, size: 7 Mb
-  2) https://github.com/JunweiLiang/Object_Detection_Tracking, Fork: https://github.com/tna-hub/Object_Detection_Tracking, size: 8.4 Mb
+  2) https://github.com/astorfi/sequence-to-sequence-from-scratch, Fork: https://github.com/tna-hub/sequence-to-sequence-from-scratch, size: 15.1 Mb
   3) https://github.com/brightmart/text_classification, Fork: https://github.com/tna-hub/text_classification, size: 14.7Mb
   
 Small projects: size between Q1 and median
