@@ -16,18 +16,17 @@ Extra Large projects (size > maxumum)
   3) Potential other project: https://github.com/dragnet-org/dragnet, size: 347 Mb
   
 Large projects: size between Q3 and maximum
-  1) https://github.com/rikichou/face_recognition_insight_face, size: 66 Mb
+  1) __https://github.com/Baidi96/text2sql, Fork: https://github.com/tna-hub/text2sql, size: 49.9 Mb
   2) https://github.com/Svito-zar/NN-for-Missing-Marker-Reconstruction, size: 72 Mb
   3) https://github.com/doronharitan/human_activity_recognition_LRCN, size: 35 Mb
   
 Medium projects: size between median and Q3
-  1) https://github.com/bearpaw/pytorch-pose, size: 7 Mb
-  2) https://github.com/astorfi/sequence-to-sequence-from-scratch, Fork: https://github.com/tna-hub/sequence-to-sequence-from-scratch, size: 15.1 Mb
-  3) https://github.com/brightmart/text_classification, Fork: https://github.com/tna-hub/text_classification, size: 14.7Mb
+  1) __https://github.com/astorfi/sequence-to-sequence-from-scratch, Fork: https://github.com/tna-hub/sequence-to-sequence-from-scratch, size: 15.1 Mb
+  2) https://github.com/brightmart/text_classification, Fork: https://github.com/tna-hub/text_classification, size: 14.7Mb
   
 Small projects: size between Q1 and median
   1) https://github.com/YoungXiyuan/DCA, Fork: https://github.com/tna-hub/DCA, size: 1.5 Mb
-  2) https://github.com/crowdbotp/socialways, Fork: https://github.com/tna-hub/socialways, size: 5.0 Mb
+  2) __https://github.com/crowdbotp/socialways, Fork: https://github.com/tna-hub/socialways, size: 5.0 Mb
 
 Very small projects: size < Q1
   - Will be ignored because too small and not relevant
