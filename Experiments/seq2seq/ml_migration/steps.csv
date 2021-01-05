@@ -1,0 +1,5 @@
+Step,code-files,methods,input_files,output_files
+Data preprocessing,data_loader.py,readLangs(),data/eng-fra.txt,words & sentences 
+Training,seq2seq.py,"seq2seq.py:train(),seq2seq.py:trainIters()",words,words & sentences 
+Testing,seq2seq.py,"seq2seq.py:evaluate(),seq2seq.py:evaluateRandomly()",words,words & sentences 
+validation,?,?,?,?

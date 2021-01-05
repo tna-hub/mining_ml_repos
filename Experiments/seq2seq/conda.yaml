@@ -1,0 +1,13 @@
+name: seq2seq.py
+channels:
+  - defaults
+  - pytorch
+  - anaconda
+  - conda-forge
+dependencies:
+  - python=3.6
+  - pip
+  - pip:
+    - torch
+    - scipy
+    - mlflow

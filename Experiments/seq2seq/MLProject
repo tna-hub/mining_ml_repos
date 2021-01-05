@@ -1,0 +1,22 @@
+name: seq2seq
+
+conda_env: conda.yaml
+entry_points:
+  main:
+    parameters:
+      learning-rate: {type: float, default: 0.01}
+      momentum: {type: float, default: 0.9}
+      weight_decay: {type: float, default: 5e-4}
+      gamma: {type: float, default: 0.1}
+      epochs_per_lr_drop: {type: float, default: 450}
+      num_epochs: {type: int, default: 10}
+      batch_size: {type: int, default: 32}
+      num_workers: {type: int, default: 8}
+      num_epoch: {type: int, default: 600}
+      epochs_per_save: {type: int, default: 10}
+      hidden_size_decoder: {type: int, default: 256}
+      num_layer_decoder: {type: int, default: 1}
+      hidden_size_encoder: {type: int, default: 256}
+    command: |
+          python3 seq2seq.py --cuda false
+
