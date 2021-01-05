@@ -1,0 +1,5 @@
+Step,code-files,functions,input_files,output_files
+Data preprocessing,create_data.py,load_word_emb,glove/word2idx.json & glove/usedwordemb.npy,saved_model/?
+Training,train.py,train.py:train(),glove/word2idx.json & glove/usedwordemb.npy,saved_model/?
+Testing,train.py,train.py:test(),glove/word2idx.json & glove/usedwordemb.npy,saved_model/?
+validation,?,?,?,?

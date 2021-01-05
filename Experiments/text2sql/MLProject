@@ -1,0 +1,48 @@
+name: tesxt2sql
+
+conda_env: conda.yaml
+
+entry_points:
+  extract_vocab:
+    parameters:
+    LOCAL_TEST: {type: bool, default: False}
+    command: |
+          bash download_glove.sh
+          python3 extract_vocab.py 
+
+  train:
+    parameters:
+      ca: {type: string, default: ''}
+      suffix: {type: string, default: ''}
+      dataset: {type: int, default: 0}
+      rl: {type: string, default: ''}
+      baseline: {type: string, default: ''}
+      train_emb: {type: string, default: ''}
+    command: |
+          python3 train.py \
+            --ca {ca} \
+            --suffix {suffix} \
+            --dataset {dataset} \
+            --r1 {r1} \
+            --baseline {baseline} \
+            --g-learning-rate {g-learning-rate} \
+            --train_emb {train_emb} 
+
+  test:
+    parameters:
+      ca: {type: string, default: ''}
+      suffix: {type: string, default: ''}
+      dataset: {type: int, default: 0}
+      rl: {type: string, default: ''}
+      baseline: {type: string, default: ''}
+      train_emb: {type: string, default: ''}
+    command: |
+          python3 test.py \
+            --ca {ca} \
+            --suffix {suffix} \
+            --dataset {dataset} \
+            --r1 {r1} \
+            --baseline {baseline} \
+            --g-learning-rate {g-learning-rate} \
+            --train_emb {train_emb} 
+
