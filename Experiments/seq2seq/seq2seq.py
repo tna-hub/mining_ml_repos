@@ -46,7 +46,7 @@ parser.add_argument('--batch_size', default=32, type=int, help='Batch size for t
 parser.add_argument('--num_workers', default=8, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--num_epoch', default=600, type=int, help='Number of training iterations')
 parser.add_argument('--cuda', default=True, type=str2bool, help='Use cuda to train model')
-parser.add_argument('--save_folder', default=os.path.expanduser('~/weights'), help='Location to save checkpoint models')
+parser.add_argument('--save_folder', default=os.path.expanduser('/trained_models'), help='Location to save checkpoint models')
 parser.add_argument('--epochs_per_save', default=10, type=int,
                     help='number of epochs for which the model will be saved')
 parser.add_argument('--batch_per_log', default=10, type=int, help='Print the log at what number of batches?')
