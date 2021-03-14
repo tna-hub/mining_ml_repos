@@ -4,6 +4,8 @@ pytorch https://github.com/pytorch/examples/tree/master/dcgan
 
 Used quartile methods and the filtered Paper With Code dataset:
   - 4930 repos
+  - Selected projects that are python3 compatible
+  - Removed projects without requirements.txt and readme.md
   - Q1 = 755Kb
   - Median = 7.5 Mb
   - Q3 = 32 Mb
